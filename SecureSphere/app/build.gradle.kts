@@ -1,18 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    // This connects to the Google Services file you added
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.securesphere"
-    compileSdk {
-        version = release(36)
-    }
+    // specific version 34 is stable and safe (36 can cause errors)
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.securesphere"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -29,11 +30,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
 }
 
@@ -46,4 +47,14 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // --- FIREBASE SETUP ---
+    // 1. The Bill of Materials (Keeps versions compatible)
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+
+    // 2. Analytics (Good for stats)
+    implementation("com.google.firebase:firebase-analytics")
+
+    // 3. AUTHENTICATION (CRITICAL: Needed for Login/Signup)
+    implementation("com.google.firebase:firebase-auth")
 }
