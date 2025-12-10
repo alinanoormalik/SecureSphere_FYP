@@ -57,4 +57,9 @@ dependencies {
 
     // 3. AUTHENTICATION (CRITICAL: Needed for Login/Signup)
     implementation("com.google.firebase:firebase-auth")
+
+    //Internet Tools
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
 }

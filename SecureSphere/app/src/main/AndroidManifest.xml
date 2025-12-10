@@ -40,6 +40,8 @@
             android:name=".SignUpActivity"
             android:exported="false" />
 
+        <activity android:name=".SpamCheckActivity" />
+
     </application>
 
 </manifest>
