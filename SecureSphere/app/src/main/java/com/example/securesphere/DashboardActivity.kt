@@ -9,34 +9,39 @@ import androidx.appcompat.app.AppCompatActivity
 class DashboardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // 1. THIS LINE MUST BE HERE. IF MISSING -> WHITE SCREEN
         setContentView(R.layout.activity_dashboard)
 
-        // 2. Find the Logout Button
-        // Make sure the ID in XML is exactly 'btnLogout'
+        // 1. LOGOUT BUTTON
         val btnLogout = findViewById<Button>(R.id.btnLogout)
-
         btnLogout.setOnClickListener {
-            // Sign out Logic
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
 
-        // 3. Find the Spam Check Button
-        // In your screenshot, you called it 'LinearLayout'.
-        // If it is a Button in XML, you MUST call it 'Button' here.
-        val btnSpam = findViewById<Button>(R.id.btnSpam)
-
-        btnSpam.setOnClickListener {
-            // Go to SpamCheckActivity
+        // 2. URL SCANNER BUTTON (Old "Spam" Button)
+        // Note: In your XML, this ID must be "btnSpam"
+        val btnUrlScan = findViewById<Button>(R.id.btnSpam)
+        btnUrlScan.setOnClickListener {
             val intent = Intent(this, SpamCheckActivity::class.java)
             startActivity(intent)
         }
 
-        // Show a popup so we know the page Loaded successfully
+        // 3. EMAIL SPAM BUTTON (The New AI Feature)
+        // Note: In your XML, this ID must be "btnOpenEmail"
+        val btnEmail = findViewById<Button>(R.id.btnOpenEmail)
+        btnEmail.setOnClickListener {
+            val intent = Intent(this, EmailActivity::class.java)
+            startActivity(intent)
+        }
+        // 4. BREACH CHECKER
+        val btnBreach = findViewById<Button>(R.id.btnOpenBreach)
+        btnBreach.setOnClickListener {
+            val intent = Intent(this, BreachCheckActivity::class.java)
+            startActivity(intent)
+        }
+        // 4. Success Message
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
     }
 }

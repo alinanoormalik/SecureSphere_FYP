@@ -25,7 +25,34 @@
         android:backgroundTint="#2196F3"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="20dp"/>
+    <!--email button-->
+    <Button
+        android:id="@+id/btnOpenEmail"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Check Email Spam"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginTop="20dp"/>
 
+    <!-- BREACH CHECKER BUTTON -->
+    <Button
+        android:id="@+id/btnOpenBreach"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Check Identity Breach"
+        android:backgroundTint="#FF5722"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- CALLER ID BUTTON -->
+    <Button
+        android:id="@+id/btnOpenCaller"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Caller ID Check"
+        android:backgroundTint="#009688"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="20dp"/>
     <!-- BUTTON 2: LOGOUT -->
     <Button
         android:id="@+id/btnLogout"

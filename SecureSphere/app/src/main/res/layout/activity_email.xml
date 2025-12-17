@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email Scanner"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"/>
+
+    <EditText
+        android:id="@+id/etEmailText"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:hint="Paste email content here..."
+        android:gravity="top"
+        android:background="#EEE"
+        android:padding="10dp"/>
+
+    <Button
+        android:id="@+id/btnScanEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check for Fraud"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/tvEmailResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"/>
+
+</LinearLayout>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Caller Identification"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#009688"
+        android:layout_marginBottom="30dp"/>
+
+    <EditText
+        android:id="@+id/etPhoneInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Phone Number (e.g. 03001234567)"
+        android:inputType="phone"
+        android:minHeight="50dp"
+        android:background="#EEE"
+        android:padding="10dp"/>
+
+    <Button
+        android:id="@+id/btnIdentify"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Identify Caller"
+        android:backgroundTint="#009688"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/tvCallerResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginTop="30dp"/>
+
+</LinearLayout>

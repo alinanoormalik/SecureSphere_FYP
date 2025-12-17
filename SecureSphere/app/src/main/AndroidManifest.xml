@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -14,34 +14,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SecureSphere"
         tools:targetApi="31">
-
-        <!-- LOGIN ACTIVITY (This is the STARTER now) -->
+        <activity
+            android:name=".CallerIDActivity"
+            android:exported="false" />
+        <activity
+            android:name=".BreachCheckActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EmailActivity"
+            android:exported="false" /> <!-- LOGIN ACTIVITY (This is the STARTER now) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- MAIN ACTIVITY (Standard screen) -->
+        </activity> <!-- MAIN ACTIVITY (Standard screen) -->
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
-
-        <!-- DASHBOARD ACTIVITY -->
+            android:exported="false" /> <!-- DASHBOARD ACTIVITY -->
         <activity
             android:name=".DashboardActivity"
-            android:exported="false" />
-
-        <!-- SIGNUP ACTIVITY (Note the Capital U) -->
+            android:exported="false" /> <!-- SIGNUP ACTIVITY (Note the Capital U) -->
         <activity
             android:name=".SignUpActivity"
             android:exported="false" />
-
         <activity android:name=".SpamCheckActivity" />
-
     </application>
 
 </manifest>
