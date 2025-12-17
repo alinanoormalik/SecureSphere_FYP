@@ -1,9 +1,18 @@
+import pickle
+from sklearn.feature_extraction.text import CountVectorizer
 from flask import Flask, request, jsonify
 import pickle
 
 app = Flask(__name__)
 
 # Load the brain
+# Load AI Models
+try:
+    spam_model = pickle.load(open("email_model.pkl", "rb"))
+    spam_cv = pickle.load(open("vectorizer.pkl", "rb"))
+    print("AI Loaded!")
+except:
+    print("AI Files not found")
 model = pickle.load(open("phishing_model.pkl", "rb"))
 vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
 
@@ -25,4 +34,18 @@ def scan():
 
 if __name__ == '__main__':
     app.run(debug=True)
-  
+  @app.route('/predict-email', methods=['POST'])
+def predict_email():
+    data = request.json
+    text = data.get('text', '')
+    
+    if not text:
+        return jsonify({"result": "Error"})
+        
+    # Convert text to numbers using the saved vectorizer
+    vec_text = spam_cv.transform([text])
+    # Predict
+    prediction = spam_model.predict(vec_text)
+    
+    # Result is 'spam' or 'ham'
+    return jsonify({"result": prediction[0]})

@@ -2,3 +2,5 @@ flask
 scikit-learn
 pandas
 gunicorn
+pandas
+scikit-learn

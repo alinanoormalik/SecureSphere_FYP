@@ -3,33 +3,40 @@ package com.example.securesphere
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
 
 class DashboardActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 1. THIS LINE MUST BE HERE. IF MISSING -> WHITE SCREEN
         setContentView(R.layout.activity_dashboard)
 
-        // --- 1. EXISTING LOGOUT LOGIC ---
+        // 2. Find the Logout Button
+        // Make sure the ID in XML is exactly 'btnLogout'
         val btnLogout = findViewById<Button>(R.id.btnLogout)
 
         btnLogout.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
+            // Sign out Logic
             val intent = Intent(this, LoginActivity::class.java)
-            // Clear back stack so user cannot go back
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
 
-        // --- 2. NEW SPAM CHECK LOGIC (Added this!) ---
+        // 3. Find the Spam Check Button
+        // In your screenshot, you called it 'LinearLayout'.
+        // If it is a Button in XML, you MUST call it 'Button' here.
         val btnSpam = findViewById<Button>(R.id.btnSpam)
 
         btnSpam.setOnClickListener {
+            // Go to SpamCheckActivity
             val intent = Intent(this, SpamCheckActivity::class.java)
             startActivity(intent)
         }
+
+        // Show a popup so we know the page Loaded successfully
+        Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
     }
 }
