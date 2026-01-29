@@ -2,22 +2,16 @@ package com.example.securesphere
 
 import android.graphics.Color
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.annotations.SerializedName
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
+import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 
 class SpamCheckActivity : AppCompatActivity() {
 
-    // 👇 PASTE YOUR FRIEND'S URL HERE (Keep the / at the end)
     private val BASE_URL = "https://nimra3238.pythonanywhere.com/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +32,7 @@ class SpamCheckActivity : AppCompatActivity() {
     }
 
     private fun checkUrl(urlToCheck: String, tvResult: TextView) {
+
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -45,25 +40,51 @@ class SpamCheckActivity : AppCompatActivity() {
 
         val api = retrofit.create(ApiService::class.java)
 
-        api.scan(ScanRequest(urlToCheck)).enqueue(object : Callback<ScanResponse> {
-            override fun onResponse(call: Call<ScanResponse>, response: Response<ScanResponse>) {
-                if (response.body()?.status == "Safe") {
-                    tvResult.text = "✅ SAFE"
-                    tvResult.setTextColor(Color.GREEN)
-                } else {
-                    tvResult.text = "⚠️ DANGER"
-                    tvResult.setTextColor(Color.RED)
+        api.scan(ScanRequest(urlToCheck))
+            .enqueue(object : Callback<ScanResponse> {
+
+                override fun onResponse(
+                    call: Call<ScanResponse>,
+                    response: Response<ScanResponse>
+                ) {
+                    val result = response.body()
+
+                    if (result == null) {
+                        tvResult.text = "Invalid response"
+                        return
+                    }
+
+                    when (result.verdict) {
+                        "SAFE" -> {
+                            tvResult.text = "✅ SAFE\nRisk: ${result.riskScore}%"
+                            tvResult.setTextColor(Color.GREEN)
+                        }
+                        "WARNING" -> {
+                            tvResult.text = "⚠️ WARNING\nRisk: ${result.riskScore}%"
+                            tvResult.setTextColor(Color.YELLOW)
+                        }
+                        "DANGER" -> {
+                            tvResult.text = "❌ DANGER\nRisk: ${result.riskScore}%"
+                            tvResult.setTextColor(Color.RED)
+                        }
+                    }
                 }
-            }
-            override fun onFailure(call: Call<ScanResponse>, t: Throwable) {
-                tvResult.text = "Error: ${t.message}"
-            }
-        })
+
+                override fun onFailure(call: Call<ScanResponse>, t: Throwable) {
+                    tvResult.text = "Error: ${t.message}"
+                }
+            })
     }
 }
 
-data class ScanRequest(@SerializedName("url") val url: String)
-data class ScanResponse(@SerializedName("status") val status: String)
+data class ScanRequest(
+    @SerializedName("url") val url: String
+)
+
+data class ScanResponse(
+    @SerializedName("verdict") val verdict: String,
+    @SerializedName("risk_score") val riskScore: Int
+)
 
 interface ApiService {
     @POST("scan")

@@ -10,7 +10,6 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.IOException
 
 class BreachCheckActivity : AppCompatActivity() {
 
@@ -18,54 +17,101 @@ class BreachCheckActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_breach_check)
 
+        // 1. Setup Views
         val etEmail = findViewById<EditText>(R.id.etBreachEmail)
         val btnCheck = findViewById<Button>(R.id.btnCheckBreach)
         val tvResult = findViewById<TextView>(R.id.tvBreachResult)
 
+        // 2. Button Click Listener
         btnCheck.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            if (email.isNotEmpty()) {
-                tvResult.text = "Searching Database..."
-                checkBreach(email, tvResult)
-            }
-        }
-    }
 
-    private fun checkBreach(email: String, tvResult: TextView) {
-        // 1. URL to your PythonAnywhere Server
-        val url = "https://nimra3238.pythonanywhere.com/check-breach"
+            val emailInput = etEmail.text.toString().trim()
 
-        // 2. JSON Data
-        val json = JSONObject()
-        json.put("email", email)
-
-        val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
-        val request = Request.Builder().url(url).post(requestBody).build()
-        val client = OkHttpClient()
-
-        // 3. Send Request
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread { tvResult.text = "Error: Server Connection Failed" }
+            if (emailInput.isEmpty()) {
+                etEmail.error = "Please enter an email"
+                return@setOnClickListener
             }
 
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                if (responseData != null) {
-                    val jsonRes = JSONObject(responseData)
-                    val status = jsonRes.getString("status") // "Safe" or "Unsafe"
+            // Show loading message
+            tvResult.text = "Searching Dark Web..."
+            tvResult.setTextColor(Color.YELLOW)
 
+            // 3. START BACKGROUND THREAD
+            Thread {
+                try {
+                    // Prepare JSON
+                    val jsonObject = JSONObject()
+                    jsonObject.put("email", emailInput)
+
+                    val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                    val body = jsonObject.toString().toRequestBody(mediaType)
+                    val request = Request.Builder()
+                        .url("https://nimra3238.pythonanywhere.com/check-breach")
+                        .post(body)
+                        .build()
+
+
+
+                    val client = OkHttpClient()
+                    val response = client.newCall(request).execute()
+                    val responseData = response.body?.string() ?: ""
+
+                    // 4. BACK TO UI THREAD
                     runOnUiThread {
-                        if (status == "Unsafe") {
-                            tvResult.text = "⚠️ LEAKED! Change Password!"
+                        try {
+
+                            // HTTP error check
+                            if (!response.isSuccessful) {
+                                tvResult.text = "❌ Server Error (${response.code})"
+                                tvResult.setTextColor(Color.RED)
+                                return@runOnUiThread
+                            }
+
+                            // HTML / 404 protection
+                            if (responseData.trim().startsWith("<")) {
+                                tvResult.text =
+                                    "❌ API Error: Invalid endpoint or server issue"
+                                tvResult.setTextColor(Color.RED)
+                                return@runOnUiThread
+                            }
+
+                            // Safe JSON parsing
+                            val jsonResponse = JSONObject(responseData)
+                            val status = jsonResponse.optString("status", "UNKNOWN")
+                            val source = jsonResponse.optString("source", "N/A")
+
+                            when (status) {
+                                "UNSAFE" -> {
+                                    tvResult.text =
+                                        "⚠️ ALERT: BREACH FOUND!\nSource: $source"
+                                    tvResult.setTextColor(Color.RED)
+                                }
+
+                                "SAFE" -> {
+                                    tvResult.text = "✅ SAFE. No leaks found."
+                                    tvResult.setTextColor(Color.GREEN)
+                                }
+
+                                else -> {
+                                    tvResult.text =
+                                        "⚠ Unexpected response:\n$responseData"
+                                    tvResult.setTextColor(Color.BLACK)
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            tvResult.text = "❌ Error parsing server response"
                             tvResult.setTextColor(Color.RED)
-                        } else {
-                            tvResult.text = "✅ SAFE. No leaks found."
-                            tvResult.setTextColor(Color.GREEN)
                         }
                     }
+
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        tvResult.text = "❌ Connection Error: ${e.message}"
+                        tvResult.setTextColor(Color.RED)
+                    }
                 }
-            }
-        })
+            }.start()   // ✅ THREAD STARTED
+        }
     }
 }

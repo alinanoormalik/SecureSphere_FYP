@@ -7,61 +7,97 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 
 class EmailActivity : AppCompatActivity() {
 
+    private val client = OkHttpClient()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_email)
 
-        val etText = findViewById<EditText>(R.id.etEmailText)
+        val etEmail = findViewById<EditText>(R.id.etEmailText)
         val btnScan = findViewById<Button>(R.id.btnScanEmail)
         val tvResult = findViewById<TextView>(R.id.tvEmailResult)
 
         btnScan.setOnClickListener {
-            val content = etText.text.toString()
-            if (content.isNotEmpty()) {
-                tvResult.text = "Analyzing..."
-                checkEmail(content, tvResult)
-            }
-        }
-    }
 
-    private fun checkEmail(text: String, tvResult: TextView) {
-        // YOUR PYTHONANYWHERE URL
-        val url = "https://nimra3238.pythonanywhere.com/predict-email"
+            val emailText = etEmail.text.toString().trim()
 
-        val json = JSONObject()
-        json.put("text", text)
-
-        val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
-        val request = Request.Builder().url(url).post(requestBody).build()
-        val client = OkHttpClient()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread { tvResult.text = "Error: Server Down" }
+            if (emailText.isEmpty()) {
+                etEmail.error = "Please enter email content"
+                return@setOnClickListener
             }
 
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                if (responseData != null) {
-                    val result = JSONObject(responseData).getString("result")
+            tvResult.text = "Analyzing email..."
+            tvResult.setTextColor(Color.GRAY)
+
+            val json = JSONObject()
+            json.put("email_text", emailText)
+
+            val body = json.toString()
+                .toRequestBody("application/json".toMediaType())
+
+            val request = Request.Builder()
+                .url("https://nimra3238.pythonanywhere.com/predict-email")
+                .post(body)
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+
+                override fun onFailure(call: Call, e: IOException) {
                     runOnUiThread {
-                        if (result == "spam") {
-                            tvResult.text = "⚠️ SPAM DETECTED"
+                        tvResult.text = "Server connection failed"
+                        tvResult.setTextColor(Color.RED)
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val responseData = response.body?.string()
+
+                    runOnUiThread {
+                        try {
+                            val jsonResponse = JSONObject(responseData ?: "")
+                            val status = jsonResponse.getString("status")
+
+                            if (status != "SUCCESS") {
+                                tvResult.text = "Invalid server response"
+                                tvResult.setTextColor(Color.RED)
+                                return@runOnUiThread
+                            }
+
+                            val label = jsonResponse.getString("classification")
+                            val confidence = jsonResponse.getDouble("confidence") * 100
+
+                            when (label) {
+                                "SPAM" -> {
+                                    tvResult.text =
+                                        "🚨 Fraudulent Email Detected\nConfidence: ${"%.1f".format(confidence)}%"
+                                    tvResult.setTextColor(Color.RED)
+                                }
+                                "SUSPICIOUS" -> {
+                                    tvResult.text =
+                                        "⚠️ Suspicious Email\nManual review recommended\nConfidence: ${"%.1f".format(confidence)}%"
+                                    tvResult.setTextColor(Color.parseColor("#FFA500")) // Orange
+                                }
+                                else -> {
+                                    tvResult.text =
+                                        "✅ Legitimate Email\nConfidence: ${"%.1f".format(confidence)}%"
+                                    tvResult.setTextColor(Color.GREEN)
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            tvResult.text = "Parsing error"
                             tvResult.setTextColor(Color.RED)
-                        } else {
-                            tvResult.text = "✅ SAFE EMAIL"
-                            tvResult.setTextColor(Color.GREEN)
                         }
                     }
                 }
-            }
-        })
+            })
+        }
     }
 }

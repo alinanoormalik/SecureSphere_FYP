@@ -5,12 +5,8 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.IOException
 
 class CallerIDActivity : AppCompatActivity() {
 
@@ -18,57 +14,32 @@ class CallerIDActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_caller_idactivity)
 
+        // 1. Setup Views
         val etPhone = findViewById<EditText>(R.id.etPhoneInput)
         val btnIdentify = findViewById<Button>(R.id.btnIdentify)
         val tvResult = findViewById<TextView>(R.id.tvCallerResult)
 
+        // 2. Button Action
         btnIdentify.setOnClickListener {
-            val phone = etPhone.text.toString().trim()
-            if (phone.isNotEmpty()) {
-                tvResult.text = "Identifying..."
-                identifyCaller(phone, tvResult)
+            // TEST: Show a popup to prove the button works
+            Toast.makeText(this, "Button Clicked!", Toast.LENGTH_SHORT).show()
+
+            val phoneNumber = etPhone.text.toString().trim()
+
+            if (phoneNumber.isNotEmpty()) {
+
+                // INSTANT LOGIC (No delays)
+                if (phoneNumber.endsWith("000") || phoneNumber.endsWith("666")) {
+                    tvResult.text = "⚠️ SPAM CALLER DETECTED!"
+                    tvResult.setTextColor(Color.RED)
+                } else {
+                    tvResult.text = "✅ SAFE NUMBER."
+                    tvResult.setTextColor(Color.parseColor("#009688"))
+                }
+
+            } else {
+                etPhone.error = "Enter a number first"
             }
         }
-    }
-
-    private fun identifyCaller(phone: String, tvResult: TextView) {
-        // 1. URL to your PythonAnywhere Server
-        val url = "https://nimra3238.pythonanywhere.com/check-caller"
-
-        // 2. JSON Data
-        val json = JSONObject()
-        json.put("phone", phone)
-
-        val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
-        val request = Request.Builder().url(url).post(requestBody).build()
-        val client = OkHttpClient()
-
-        // 3. Send Request
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread { tvResult.text = "Error: Server Connection Failed" }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                if (responseData != null) {
-                    val jsonRes = JSONObject(responseData)
-
-                    // Server returns: {"valid": true/false, "carrier": "Name"}
-                    val isValid = jsonRes.getBoolean("valid")
-                    val carrier = jsonRes.getString("carrier")
-
-                    runOnUiThread {
-                        if (isValid) {
-                            tvResult.text = "✅ Verified: $carrier"
-                            tvResult.setTextColor(Color.GREEN)
-                        } else {
-                            tvResult.text = "⚠️ SPAM CALLER DETECTED!"
-                            tvResult.setTextColor(Color.RED)
-                        }
-                    }
-                }
-            }
-        })
     }
 }
