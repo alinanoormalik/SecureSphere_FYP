@@ -65,4 +65,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
+    //password manager
+    implementation("androidx.biometric:biometric:1.1.0")
 }

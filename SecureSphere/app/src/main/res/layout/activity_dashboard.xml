@@ -53,6 +53,17 @@
         android:backgroundTint="#009688"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/cardVault"
+        android:layout_width="366dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="#000000"
+        android:text="Open Password Vault"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold" />
+
     <!-- BUTTON 2: LOGOUT -->
     <Button
         android:id="@+id/btnLogout"

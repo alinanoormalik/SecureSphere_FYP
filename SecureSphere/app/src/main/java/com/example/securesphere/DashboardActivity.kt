@@ -35,6 +35,14 @@ class DashboardActivity : AppCompatActivity() {
             val intent = Intent(this, EmailActivity::class.java)
             startActivity(intent)
         }
+
+        // Find the generic Button, not a CardView
+        val btnVault = findViewById<Button>(R.id.cardVault)
+
+        btnVault.setOnClickListener {
+            val intent = Intent(this, PasswordManagerActivity::class.java)
+            startActivity(intent)
+        }
         // 4. BREACH CHECKER
         val btnBreach = findViewById<Button>(R.id.btnOpenBreach)
         btnBreach.setOnClickListener {
@@ -44,4 +52,7 @@ class DashboardActivity : AppCompatActivity() {
         // 4. Success Message
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
     }
+
+
 }
+
