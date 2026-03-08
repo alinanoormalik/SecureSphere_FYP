@@ -49,9 +49,18 @@ class DashboardActivity : AppCompatActivity() {
             val intent = Intent(this, BreachCheckActivity::class.java)
             startActivity(intent)
         }
+
+        //caller
+        val callerIdButton = findViewById<Button>(R.id.btnOpenCaller)
+
+        callerIdButton.setOnClickListener {
+            val intent = Intent(this, CallerIDActivity::class.java)
+            startActivity(intent)
+        }
         // 4. Success Message
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
     }
+
 
 
 }
