@@ -47,6 +47,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     // --- FIREBASE SETUP ---
     // 1. The Bill of Materials (Keeps versions compatible)

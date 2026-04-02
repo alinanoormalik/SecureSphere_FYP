@@ -50,6 +50,11 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        val malwareBtn = findViewById<Button>(R.id.malwareBtn)
+
+        malwareBtn.setOnClickListener {
+            startActivity(Intent(this, MalwareAnalysisActivity::class.java))
+        }
         //caller
         val callerIdButton = findViewById<Button>(R.id.btnOpenCaller)
 
@@ -61,7 +66,11 @@ class DashboardActivity : AppCompatActivity() {
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
     }
 
+    val malwareBtn = findViewById<Button>(R.id.malwareBtn)
 
+    malwareBtn.setOnClickListener {
+        startActivity(Intent(this, MalwareAnalysisActivity::class.java))
+    }
 
 }
 

@@ -73,4 +73,10 @@
         android:backgroundTint="#F44336"
         android:textColor="#FFFFFF"/>
 
+    <Button
+        android:id="@+id/malwareBtn"
+        android:text="Malware Analysis"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </LinearLayout>
