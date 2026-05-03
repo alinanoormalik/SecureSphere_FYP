@@ -64,13 +64,11 @@ class DashboardActivity : AppCompatActivity() {
         }
         // 4. Success Message
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
+
+
+
     }
 
-    val malwareBtn = findViewById<Button>(R.id.malwareBtn)
-
-    malwareBtn.setOnClickListener {
-        startActivity(Intent(this, MalwareAnalysisActivity::class.java))
-    }
 
 }
 

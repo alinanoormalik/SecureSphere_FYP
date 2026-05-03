@@ -54,9 +54,7 @@
             android:name=".PasswordManagerActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".MalwareAnalysisActivity"
-            android:exported="false"/>
+
 
     </application>
 
