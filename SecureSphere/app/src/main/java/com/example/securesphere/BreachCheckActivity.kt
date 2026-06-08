@@ -2,29 +2,47 @@ package com.example.securesphere
 
 import android.graphics.Color
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
 class BreachCheckActivity : AppCompatActivity() {
+
+    private lateinit var etEmail: EditText
+    private lateinit var btnCheck: Button
+    private lateinit var tvResult: TextView
+    private lateinit var cb2FA: CheckBox
+    private lateinit var cbReuse: CheckBox
+    private lateinit var cbLegacy: CheckBox
+    private lateinit var resultContainer: LinearLayout
+    private lateinit var tvRiskBadge: TextView
+    private lateinit var dynamicBreachList: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_breach_check)
 
-        // 1. Setup Views
-        val etEmail = findViewById<EditText>(R.id.etBreachEmail)
-        val btnCheck = findViewById<Button>(R.id.btnCheckBreach)
-        val tvResult = findViewById<TextView>(R.id.tvBreachResult)
+        // Initialize UI hooks matching the XML elements
+        etEmail = findViewById(R.id.etBreachEmail)
+        btnCheck = findViewById(R.id.btnCheckBreach)
+        tvResult = findViewById(R.id.tvBreachResult)
+        cb2FA = findViewById(R.id.cb2FA)
+        cbReuse = findViewById(R.id.cbReuse)
+        cbLegacy = findViewById(R.id.cbLegacy)
+        resultContainer = findViewById(R.id.resultContainer)
+        tvRiskBadge = findViewById(R.id.tvRiskBadge)
+        dynamicBreachList = findViewById(R.id.dynamicBreachList)
 
-        // 2. Button Click Listener
         btnCheck.setOnClickListener {
-
             val emailInput = etEmail.text.toString().trim()
 
             if (emailInput.isEmpty()) {
@@ -32,86 +50,115 @@ class BreachCheckActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Show loading message
-            tvResult.text = "Searching Dark Web..."
-            tvResult.setTextColor(Color.YELLOW)
+            // Lock UI input controls during API fetch transactions
+            btnCheck.isEnabled = false
+            btnCheck.text = "Analyzing Threat Vector..."
+            resultContainer.visibility = View.GONE
+            dynamicBreachList.removeAllViews()
 
-            // 3. START BACKGROUND THREAD
-            Thread {
-                try {
-                    // Prepare JSON
-                    val jsonObject = JSONObject()
-                    jsonObject.put("email", emailInput)
+            // Safe Coroutine routing to keep the main interface responsive
+            executeRiskAssessment(emailInput)
+        }
+    }
 
-                    val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
-                    val body = jsonObject.toString().toRequestBody(mediaType)
-                    val request = Request.Builder()
-                        .url("https://nimra3238.pythonanywhere.com/check-breach")
-                        .post(body)
-                        .build()
+    private fun executeRiskAssessment(email: String) {
+        val is2FaChecked = cb2FA.isChecked
+        val isReuseChecked = cbReuse.isChecked
+        val isLegacyChecked = cbLegacy.isChecked
 
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // For Android Studio Emulator, 10.0.2.2 reroutes directly to your computer's localhost FastAPI server instance
+                val targetUrl = URL("https://nimra3238.pythonanywhere.com/check-breach")
+                val conn = targetUrl.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.doOutput = true
 
-
-                    val client = OkHttpClient()
-                    val response = client.newCall(request).execute()
-                    val responseData = response.body?.string() ?: ""
-
-                    // 4. BACK TO UI THREAD
-                    runOnUiThread {
-                        try {
-
-                            // HTTP error check
-                            if (!response.isSuccessful) {
-                                tvResult.text = "❌ Server Error (${response.code})"
-                                tvResult.setTextColor(Color.RED)
-                                return@runOnUiThread
-                            }
-
-                            // HTML / 404 protection
-                            if (responseData.trim().startsWith("<")) {
-                                tvResult.text =
-                                    "❌ API Error: Invalid endpoint or server issue"
-                                tvResult.setTextColor(Color.RED)
-                                return@runOnUiThread
-                            }
-
-                            // Safe JSON parsing
-                            val jsonResponse = JSONObject(responseData)
-                            val status = jsonResponse.optString("status", "UNKNOWN")
-                            val source = jsonResponse.optString("source", "N/A")
-
-                            when (status) {
-                                "UNSAFE" -> {
-                                    tvResult.text =
-                                        "⚠️ ALERT: BREACH FOUND!\nSource: $source"
-                                    tvResult.setTextColor(Color.RED)
-                                }
-
-                                "SAFE" -> {
-                                    tvResult.text = "✅ SAFE. No leaks found."
-                                    tvResult.setTextColor(Color.GREEN)
-                                }
-
-                                else -> {
-                                    tvResult.text =
-                                        "⚠ Unexpected response:\n$responseData"
-                                    tvResult.setTextColor(Color.BLACK)
-                                }
-                            }
-
-                        } catch (e: Exception) {
-                            tvResult.text = "❌ Error parsing server response"
-                            tvResult.setTextColor(Color.RED)
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        tvResult.text = "❌ Connection Error: ${e.message}"
-                        tvResult.setTextColor(Color.RED)
-                    }
+                // Structure payload schema components
+                val rootJson = JSONObject().apply {
+                    put("email", email)
+                    put("questionnaire", JSONObject().apply {
+                        put("is_2fa_disabled", is2FaChecked)
+                        put("is_password_reused", isReuseChecked)
+                        put("has_legacy_connected_apps", isLegacyChecked)
+                    })
                 }
-            }.start()   // ✅ THREAD STARTED
+
+                OutputStreamWriter(conn.outputStream, "UTF-8").use { os ->
+                    os.write(rootJson.toString())
+                    os.flush()
+                }
+
+                if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                    val responseString = conn.inputStream.bufferedReader().use { it.readText() }
+                    val jsonResponse = JSONObject(responseString)
+
+                    withContext(Dispatchers.Main) {
+                        renderAssessmentResults(jsonResponse)
+                    }
+                } else {
+                    showErrorOnMainThread("Engine error code: ${conn.responseCode}")
+                }
+            } catch (e: Exception) {
+                showErrorOnMainThread("Network offline. Confirm FastAPI is hosting local server port loop.")
+            }
+        }
+    }
+
+    private fun renderAssessmentResults(data: JSONObject) {
+        btnCheck.isEnabled = true
+        btnCheck.text = "Run Security Audit"
+        resultContainer.visibility = View.VISIBLE
+
+        val score = data.getInt("vulnerability_index_percentage")
+        val grade = data.getString("risk_grade")
+
+        tvResult.text = "Vulnerability Index Percentage: $score%"
+        tvRiskBadge.text = grade
+
+        when (grade) {
+            "CRITICAL RISK" -> {
+                tvRiskBadge.setBackgroundColor(Color.parseColor("#D32F2F"))
+                tvRiskBadge.setTextColor(Color.WHITE)
+            }
+            "MEDIUM RISK" -> {
+                tvRiskBadge.setBackgroundColor(Color.parseColor("#F57C00"))
+                tvRiskBadge.setTextColor(Color.WHITE)
+            }
+            else -> {
+                tvRiskBadge.setBackgroundColor(Color.parseColor("#388E3C"))
+                tvRiskBadge.setTextColor(Color.WHITE)
+            }
+        }
+
+        val breachLogs: JSONArray = data.getJSONArray("breach_logs")
+        if (breachLogs.length() == 0) {
+            val clearTxt = TextView(this).apply {
+                text = "✔ Safe baseline status. No dark web data exposures discovered."
+                setTextColor(Color.GREEN)
+                setPadding(0, 8, 0, 8)
+            }
+            dynamicBreachList.addView(clearTxt)
+        } else {
+            for (i in 0 until breachLogs.length()) {
+                val leakObj = breachLogs.getJSONObject(i)
+                val entryField = TextView(this).apply {
+                    text = "⚠ Leak: ${leakObj.getString("breach_name")} (${leakObj.getInt("year")})\n   Exposed elements: ${leakObj.getString("exposed_data")}"
+                    setTextColor(Color.parseColor("#FFCC00"))
+                    setPadding(0, 10, 0, 10)
+                }
+                dynamicBreachList.addView(entryField)
+            }
+        }
+    }
+
+    private suspend fun showErrorOnMainThread(message: String) {
+        withContext(Dispatchers.Main) {
+            btnCheck.isEnabled = true
+            btnCheck.text = "Run Security Audit"
+            Toast.makeText(this@BreachCheckActivity, message, Toast.LENGTH_LONG).show()
         }
     }
 }

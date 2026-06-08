@@ -1,30 +1,37 @@
 import pickle
 from sklearn.feature_extraction.text import CountVectorizer
 from flask import Flask, request, jsonify
-import pickle
 
 app = Flask(__name__)
 
-# Load the brain
+# ===============================
 # Load AI Models
+# ===============================
 try:
     spam_model = pickle.load(open("email_model.pkl", "rb"))
     spam_cv = pickle.load(open("vectorizer.pkl", "rb"))
     print("AI Loaded!")
-except:
-    print("AI Files not found")
+except Exception as e:
+    print(f"AI Files not found: {e}")
+
 model = pickle.load(open("phishing_model.pkl", "rb"))
 vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
 
+
+# ===============================
+# Routes
+# ===============================
 @app.route('/')
 def home():
     return "Secure Sphere Server is Online!"
+
 
 @app.route('/scan', methods=['POST'])
 def scan():
     data = request.json
     url = data.get('url', '')
-    if not url: return jsonify({"status": "Error"})
+    if not url: 
+        return jsonify({"status": "Error"})
     
     # Ask the brain
     prediction = model.predict(vectorizer.transform([url]))[0]
@@ -32,9 +39,8 @@ def scan():
     
     return jsonify({"status": result})
 
-if __name__ == '__main__':
-    app.run(debug=True)
-  @app.route('/predict-email', methods=['POST'])
+
+@app.route('/predict-email', methods=['POST'])
 def predict_email():
     data = request.json
     text = data.get('text', '')
@@ -49,3 +55,10 @@ def predict_email():
     
     # Result is 'spam' or 'ham'
     return jsonify({"result": prediction[0]})
+
+
+# ===============================
+# Execution Block
+# ===============================
+if __name__ == '__main__':
+    app.run(debug=True)

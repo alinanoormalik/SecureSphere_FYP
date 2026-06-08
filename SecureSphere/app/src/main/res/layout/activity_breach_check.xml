@@ -1,53 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:gravity="center_horizontal"
-    android:background="#FAFAFA">
+    android:background="#121212"
+    android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Identity Breach Check"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#D32F2F"
-        android:layout_marginBottom="30dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enter email to check Dark Web leaks:"
-        android:textSize="16sp"
-        android:layout_marginBottom="10dp"/>
-
-    <EditText
-        android:id="@+id/etBreachEmail"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="e.g., test@test.com"
-        android:inputType="textEmailAddress"
-        android:minHeight="50dp"
-        android:background="#FFFFFF"
-        android:padding="10dp"/>
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnCheckBreach"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="SCAN NOW"
-        android:backgroundTint="#D32F2F"
-        android:layout_marginTop="20dp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Social Media Breach &amp; Audit Engine"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
 
-    <TextView
-        android:id="@+id/tvBreachResult"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="..."
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginTop="30dp"/>
+        <EditText
+            android:id="@+id/etBreachEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter email address to evaluate"
+            android:textColorHint="#757575"
+            android:textColor="#FFFFFF"
+            android:inputType="textEmailAddress"
+            android:layout_marginBottom="20dp"/>
 
-</LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Active Posture Self-Assessment Options:"
+            android:textColor="#B0BEC5"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/cb2FA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Two-Factor Authentication (2FA) is Disabled"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/cbReuse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="I reuse passwords across multiple social profiles"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/cbLegacy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Outdated / Legacy applications have profile access"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="20dp"/>
+
+        <Button
+            android:id="@+id/btnCheckBreach"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Run Security Audit"
+            android:backgroundTint="#1E88E5"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="24dp"/>
+
+        <LinearLayout
+            android:id="@+id/resultContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1E1E1E"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvRiskBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOW RISK"
+                android:padding="8dp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:id="@+id/tvBreachResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Identified Exposure Sources:"
+                android:textColor="#B0BEC5"
+                android:textSize="12sp"
+                android:layout_marginBottom="6dp"/>
+
+            <LinearLayout
+                android:id="@+id/dynamicBreachList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
