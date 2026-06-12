@@ -72,6 +72,12 @@ dependencies {
     //caller identify
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    dependencies {
+        // 1. Keep location and firebase tools
+        implementation("com.google.android.gms:play-services-location:21.2.0")
+        implementation("com.google.firebase:firebase-database-ktx:20.3.1")
 
-
+        // 2. Add the 100% Free OpenStreetMap library
+        implementation("org.osmdroid:osmdroid-android:6.1.18")
+    }
 }

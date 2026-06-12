@@ -65,7 +65,15 @@ class DashboardActivity : AppCompatActivity() {
         // 4. Success Message
         Toast.makeText(this, "Dashboard Loaded!", Toast.LENGTH_SHORT).show()
 
+// 1. Find the button using the ID we defined in the XML layout
+        val btnRiskyArea = findViewById<Button>(R.id.btnRiskyArea)
 
+// 2. Set an interactive click listener to handle screen navigation
+        btnRiskyArea.setOnClickListener {
+            // Explicit Intent to securely transition from the Dashboard to your new Module
+            val intent = Intent(this, RiskyShareActivity::class.java)
+            startActivity(intent)
+        }
 
     }
 
