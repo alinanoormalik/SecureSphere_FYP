@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
+
 class DashboardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,9 +38,9 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         // Find the generic Button, not a CardView
-        val btnVault = findViewById<Button>(R.id.cardVault)
+        val cardVault = findViewById<Button>(R.id.cardVault)
 
-        btnVault.setOnClickListener {
+        cardVault.setOnClickListener{
             val intent = Intent(this, PasswordManagerActivity::class.java)
             startActivity(intent)
         }
@@ -50,6 +51,13 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+
+        //HIDDEN IMAGE VAULT LAUNCHER
+        val btnVault = findViewById<Button>(R.id.btnOpenImageVault)
+        btnVault.setOnClickListener {
+            val intent = Intent(this, HiddenImagesActivity::class.java)
+            startActivity(intent)
+        }
         val malwareBtn = findViewById<Button>(R.id.malwareBtn)
 
         malwareBtn.setOnClickListener {

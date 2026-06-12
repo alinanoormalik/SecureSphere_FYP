@@ -27,7 +27,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".MalwareAnalysisActivity"
+            android:name=".com.example.securesphere.MalwareAnalysisActivity"
             android:exported="false"/>
 
         <activity
@@ -35,7 +35,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".SpamCheckActivity"
+            android:name=".com.example.securesphere.SpamCheckActivity"
             android:exported="false" />
 
         <activity
@@ -60,6 +60,10 @@
         <activity
             android:name=".MainActivity"
             android:exported="true" />
+
+        <activity
+            android:name=".HiddenImagesActivity"
+            android:exported="false" />
 
         <activity
             android:name=".LoginActivity"

@@ -64,14 +64,14 @@
         android:textColor="#FFFFFF"
         android:textStyle="bold" />
 
-    <!-- BUTTON 2: LOGOUT -->
     <Button
-        android:id="@+id/btnLogout"
+        android:id="@+id/btnOpenImageVault"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Logout"
-        android:backgroundTint="#F44336"
-        android:textColor="#FFFFFF"/>
+        android:layout_height="wrap_content"
+        android:text="Open Hidden Image Vault"
+        android:backgroundTint="#4CAF70"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="10dp"/>
 
     <Button
         android:id="@+id/malwareBtn"
@@ -88,4 +88,15 @@
         android:textColor="#FFFFFF"
         android:textStyle="bold"
         android:backgroundTint="#FF9800" />
+
+    <!-- BUTTON 2: LOGOUT -->
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Logout"
+        android:backgroundTint="#F44336"
+        android:textColor="#FFFFFF"/>
+
+
 </LinearLayout>
