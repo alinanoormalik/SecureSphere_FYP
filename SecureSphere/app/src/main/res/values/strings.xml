@@ -1,3 +1,51 @@
 <resources>
     <string name="app_name">SecureSphere</string>
+    <string name="terminal_title">SecureSphere Terminal</string>
+    <string name="default_initial">U</string>
+
+    <string name="title_spam_url">Check Spam URL</string>
+    <string name="title_email_spam">Check Email Spam</string>
+    <string name="title_identity_breach">Identity Breach</string>
+    <string name="title_caller_id">Caller ID Check</string>
+    <string name="title_password_vault">Password Vault</string>
+    <string name="title_image_vault">Image Vault</string>
+    <string name="title_malware_analysis">Malware Analysis</string>
+    <string name="title_risky_tracking">Risky Tracking</string>
+
+    <string name="desc_spam_url_icon">Spam URL Icon</string>
+    <string name="desc_email_spam_icon">Email Spam Icon</string>
+    <string name="desc_identity_breach_icon">Identity Breach Icon</string>
+    <string name="desc_caller_id_icon">Caller ID Icon</string>
+    <string name="desc_password_vault_icon">Password Vault Icon</string>
+    <string name="desc_image_vault_icon">Image Vault Icon</string>
+    <string name="desc_malware_analysis_icon">Malware Analysis Icon</string>
+    <string name="desc_risky_tracking_icon">Risky Tracking Icon</string>
+
+    <string name="profile_default_name">SecureSphere User</string>
+    <string name="profile_loading_status">Loading profile configuration...</string>
+    <string name="profile_system_shield">🛡️ System Shield Status: ENFORCED</string>
+    <string name="profile_vault_status">📦 Local Database Vault: Encrypted (AES-256)</string>
+    <string name="profile_your_info">Your information</string>
+    <string name="profile_change_pass">Change password</string>
+    <string name="profile_about">About SecureSphere core</string>
+    <string name="profile_feedback">Transmit telemetry feedback</string>
+    <string name="profile_dark_engine">Dark engine core</string>
+    <string name="profile_logout">Logout</string>
+
+    <string name="title_login">Welcome Back</string>
+    <string name="title_signup">Create Account</string>
+    <string name="hint_email">Email Address</string>
+    <string name="hint_password">Password (min 6 chars)</string>
+    <string name="action_login">LOG IN</string>
+    <string name="action_signup">SIGN UP</string>
+    <string name="label_remember_me">Remember Me (Skip 2FA)</string>
+    <string name="switch_to_signup">New here? Create an account</string>
+    <string name="switch_to_login">Already have an account? Login</string>
+
+    <string name="hint_full_name">Full Name</string>
+    <string name="title_two_factor">Two-Factor Authentication</string>
+    <string name="subtitle_two_factor">Enter the secure authorization code sent to your email</string>
+    <string name="hint_verification_code">6-Digit Secure Code</string>
+    <string name="action_verify">VERIFY IDENTITY</string>
+    <string name="error_invalid_code">Security token mismatch. Access Denied.</string>
 </resources>

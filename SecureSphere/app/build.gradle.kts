@@ -48,6 +48,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.warrenstrange:googleauth:1.5.0")
 
     // --- FIREBASE SETUP ---
     // 1. The Bill of Materials (Keeps versions compatible)
@@ -79,5 +80,17 @@ dependencies {
 
         // 2. Add the 100% Free OpenStreetMap library
         implementation("org.osmdroid:osmdroid-android:6.1.18")
+    }
+
+    android {
+        // ... your existing config (compileSdk, defaultConfig, etc.) ...
+
+        packaging {
+            resources {
+                excludes += "/META-INF/DEPENDENCIES"
+                excludes += "/META-INF/LICENSE"
+                excludes += "/META-INF/NOTICE"
+            }
+        }
     }
 }

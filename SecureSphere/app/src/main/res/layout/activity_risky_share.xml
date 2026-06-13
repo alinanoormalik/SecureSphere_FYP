@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Emergency Live Location Sharing"
+            android:text="Zone Defense &amp; Emergency Feed"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -33,6 +33,57 @@
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/topBar" />
+        android:layout_below="@id/topBar"
+        android:layout_above="@id/bottomContactPanel" />
+
+    <LinearLayout
+        android:id="@+id/bottomContactPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="#1E1E1E">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚨 SOS Emergency Contacts Config"
+            android:textColor="#FF5252"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <EditText
+                android:id="@+id/etContact1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Primary Email"
+                android:textColorHint="#757575"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:importantForAutofill="no"
+                android:inputType="textEmailAddress"/>
+
+            <EditText
+                android:id="@+id/etContact2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Secondary Email"
+                android:textColorHint="#757575"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:importantForAutofill="no"
+                android:inputType="textEmailAddress"/>
+        </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

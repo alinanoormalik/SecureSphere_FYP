@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
         android:allowBackup="true"
@@ -22,12 +28,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+
         <activity
             android:name=".CallerIDActivity"
             android:exported="false" />
 
         <activity
-            android:name=".com.example.securesphere.MalwareAnalysisActivity"
+            android:name="MalwareAnalysisActivity"
             android:exported="false"/>
 
         <activity
@@ -35,7 +42,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".com.example.securesphere.SpamCheckActivity"
+            android:name="SpamCheckActivity"
             android:exported="false" />
 
         <activity
@@ -73,6 +80,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".TwoFactorActivity"
+            android:exported="false" />
 
     </application>
 </manifest>

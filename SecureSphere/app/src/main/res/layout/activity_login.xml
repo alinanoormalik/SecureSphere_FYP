@@ -1,56 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="24dp"
-    android:background="#F5F5F5">
+    android:padding="32dp"
+    android:background="?android:attr/windowBackground">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Secure Sphere"
-        android:textSize="32sp"
+        android:text="@string/title_login"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="40dp"/>
+        android:layout_marginBottom="32dp"/>
 
-    <EditText
-        android:id="@+id/loginEmail"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:hint="Email Address"
-        android:inputType="textEmailAddress"
-        android:background="@android:drawable/edit_text"
-        android:padding="10dp"
-        android:layout_marginBottom="16dp"/>
-
-    <EditText
-        android:id="@+id/loginPass"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:background="@android:drawable/edit_text"
-        android:padding="10dp"
-        android:layout_marginBottom="24dp"/>
-
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="LOG IN"
-        android:textSize="18sp"
-        android:backgroundTint="#2196F3"/>
-
-    <Button
-        android:id="@+id/btnGoToSignup"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New user? Sign Up here"
-        android:textColor="#2196F3"
-        android:background="@android:color/transparent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etLoginEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_email"
+            android:inputType="textEmailAddress"
+            android:textColor="?android:attr/textColorPrimary"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:passwordToggleEnabled="true">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etLoginPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_password"
+            android:inputType="textPassword"
+            android:textColor="?android:attr/textColorPrimary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <CheckBox
+        android:id="@+id/cbRememberMe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_remember_me"
+        android:textColor="?android:attr/textColorSecondary"
+        android:layout_marginBottom="24dp"
+        android:buttonTint="#BB86FC"/>
+
+    <Button
+        android:id="@+id/btnLoginSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:text="@string/action_login"
+        android:backgroundTint="#BB86FC"
+        android:textColor="#121212"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.MaterialComponents.Button"/>
+
+    <TextView
+        android:id="@+id/tvNavigateToSignUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/switch_to_signup"
+        android:textColor="#BB86FC"
+        android:textSize="14sp"
+        android:clickable="true"
+        android:focusable="true"/>
 </LinearLayout>
