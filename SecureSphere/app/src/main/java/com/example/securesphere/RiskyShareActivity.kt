@@ -4,27 +4,26 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.content.IntentSender
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.Paint
 import android.location.Location
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import android.widget.ArrayAdapter
+import android.os.Handler
+import android.os.Looper
+import android.preference.PreferenceManager
+import android.provider.Settings
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.RadioGroup
-import android.widget.RadioButton
-import android.widget.Spinner
 import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.firebase.database.FirebaseDatabase
+import org.json.JSONObject
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
@@ -32,100 +31,61 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
-import java.io.File
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
+
 
 class RiskyShareActivity : AppCompatActivity() {
 
     private lateinit var map: MapView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
-    private lateinit var dbHelper: LocationDbHelper
 
     private val dbRef = FirebaseDatabase.getInstance().getReference("live_locations")
     private val currentUserId = "fyp_test_user"
-    private var isSharingEnabled = false
 
-    // Explicitly typed list to avoid any "uninferred type parameter" or argument mismatch errors
-    private val userDefinedZones = mutableListOf<Pair<CustomRiskyZone, String>>()
+    // Replace this string link with your actual PythonAnywhere URL later!
+    private val backendUrl = "http://127.0.0.1:5000/api/save-zone"
+
+    private val userDefinedZones = mutableListOf<CustomRiskyZone>()
     private var userLocationMarker: Marker? = null
+    private var isSharingEnabled = false
+    private var isEmergencyFired = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val osmConfig = Configuration.getInstance()
-        osmConfig.userAgentValue = "SecureSphere/1.0 (Android FYP Project)"
-        val basePath = File(filesDir, "osmdroid")
-        osmConfig.osmdroidBasePath = basePath
-        osmConfig.osmdroidTileCache = File(basePath, "tiles")
+        val ctx = applicationContext
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
 
         setContentView(R.layout.activity_risky_share)
 
-        dbHelper = LocationDbHelper(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         map = findViewById(R.id.mapView)
 
         map.setMultiTouchControls(true)
-        map.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         map.controller.setZoom(16.0)
 
         setupMapInteractions()
-        loadPermanentZonesFromDb()
 
         val btnToggleShare = findViewById<ToggleButton>(R.id.btnToggleShare)
         btnToggleShare.setOnCheckedChangeListener { _, isChecked ->
             isSharingEnabled = isChecked
-            if (isChecked) {
-                requestDevicePermissions()
-            } else {
-                stopLocationUpdates()
+            if (!isChecked) {
                 dbRef.child(currentUserId).removeValue()
-                Toast.makeText(this, "Tracking Engine Deactivated", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Live Tracking Terminated", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
-    private fun loadPermanentZonesFromDb() {
-        userDefinedZones.clear()
-        val savedData: List<Pair<CustomRiskyZone, String>> = dbHelper.getAllZones()
-
-        // Using explicit index tracking to avoid ambiguous 'iterator()' expressions
-        for (i in 0 until savedData.size) {
-            val item = savedData[i]
-            userDefinedZones.add(item)
-            renderZoneOnMap(item.first, item.second)
-        }
-        map.invalidate()
-    }
-
-    private fun renderZoneOnMap(zone: CustomRiskyZone, type: String) {
-        val marker = Marker(map).apply {
-            position = zone.geoPoint
-            title = "[$type] ${zone.name}"
-            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        }
-        map.overlays.add(marker)
-
-        val circlePoints = Polygon.pointsAsCircle(zone.geoPoint, zone.radiusMeters.toDouble())
-        val circle = Polygon().apply {
-            points = circlePoints
-
-            // Cleaned up painting calls using standard color mappings without deprecation warnings
-            val targetColor = if (type == "DANGER") Color.RED else Color.GREEN
-            val targetFill = if (type == "DANGER") Color.argb(50, 255, 0, 0) else Color.argb(50, 0, 255, 0)
-
-            outlinePaint.color = targetColor
-            outlinePaint.style = Paint.Style.STROKE
-            outlinePaint.strokeWidth = 2f
-
-            fillPaint.color = targetFill
-            fillPaint.style = Paint.Style.FILL
-        }
-        map.overlays.add(circle)
+        checkLocationHardwareAndPermissions()
     }
 
     private fun setupMapInteractions() {
         val mReceive = object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean = false
+
             override fun longPressHelper(p: GeoPoint?): Boolean {
                 p?.let { showCreateZoneDialog(it) }
                 return true
@@ -136,52 +96,32 @@ class RiskyShareActivity : AppCompatActivity() {
 
     private fun showCreateZoneDialog(geoPoint: GeoPoint) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Configure Permanent Perimeter")
+        builder.setTitle("Flag Dangerous Environment Globally")
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
 
-        val inputName = EditText(this).apply { hint = "Location Name (e.g., Main Street Corridor)" }
+        val inputName = EditText(this).apply { hint = "Threat Description (e.g., Dark Alleyway)" }
         layout.addView(inputName)
 
-        val radioGroup = RadioGroup(this).apply {
-            orientation = RadioGroup.HORIZONTAL
-            setPadding(0, 20, 0, 20)
+        val inputRadius = EditText(this).apply {
+            hint = "Danger Radius in meters (e.g., 200)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
-        val rbDanger = RadioButton(this).apply { text = "Danger Area"; id = View.generateViewId() }
-        val rbSafe = RadioButton(this).apply { text = "Safe Area"; id = View.generateViewId() }
-        radioGroup.addView(rbDanger)
-        radioGroup.addView(rbSafe)
-        rbDanger.isChecked = true
-        layout.addView(radioGroup)
-
-        val radiusSpinner = Spinner(this)
-        val radiusOptions = arrayOf("100 Meters (Tight Perimeter)", "250 Meters (Standard Block)", "500 Meters (Wide Zone)")
-        radiusSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, radiusOptions)
-        layout.addView(radiusSpinner)
+        layout.addView(inputRadius)
 
         builder.setView(layout)
 
-        builder.setPositiveButton("Commit to Storage") { dialog, _ ->
+        builder.setPositiveButton("Publish to SecureSphere Cloud") { dialog, _ ->
             val name = inputName.text.toString().trim()
-            val zoneType = if (radioGroup.checkedRadioButtonId == rbDanger.id) "DANGER" else "SAFE"
-            val radius = when(radiusSpinner.selectedItemPosition) {
-                0 -> 100f
-                1 -> 250f
-                else -> 500f
-            }
+            val radiusStr = inputRadius.text.toString().trim()
 
-            if (name.isNotEmpty()) {
-                val isSaved = dbHelper.saveZone(name, geoPoint.latitude, geoPoint.longitude, radius, zoneType)
-                if (isSaved) {
-                    val newZone = CustomRiskyZone(name, geoPoint, radius)
-                    userDefinedZones.add(Pair(newZone, zoneType))
-                    renderZoneOnMap(newZone, zoneType)
-                    map.invalidate()
-                    Toast.makeText(this, "Zone locked to database permanently!", Toast.LENGTH_SHORT).show()
-                }
+            if (name.isNotEmpty() && radiusStr.isNotEmpty()) {
+                val radius = radiusStr.toFloat()
+                plotZoneOnMap(name, geoPoint, radius)
+                sendZoneToBackendAPI(name, geoPoint.latitude, geoPoint.longitude, radius)
             }
             dialog.dismiss()
         }
@@ -189,54 +129,100 @@ class RiskyShareActivity : AppCompatActivity() {
         builder.show()
     }
 
-    private fun requestDevicePermissions() {
-        val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-        val missing = permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+    private fun plotZoneOnMap(name: String, geoPoint: GeoPoint, radius: Float) {
+        userDefinedZones.add(CustomRiskyZone(name, geoPoint, radius))
 
-        if (missing.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, missing.toTypedArray(), 200)
-        } else {
-            checkDeviceLocationSettings()
+        val marker = Marker(map).apply {
+            position = geoPoint
+            title = name
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
+        map.overlays.add(marker)
+
+        val circle = Polygon().apply {
+            points = Polygon.pointsAsCircle(geoPoint, radius.toDouble())
+            fillColor = Color.argb(60, 244, 67, 54)
+            strokeColor = Color.RED
+            strokeWidth = 2f
+        }
+        map.overlays.add(circle)
+        map.invalidate()
     }
 
-    private fun checkDeviceLocationSettings() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000).build()
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val client = LocationServices.getSettingsClient(this)
+    private fun sendZoneToBackendAPI(name: String, lat: Double, lon: Double, radius: Float) {
+        thread {
+            try {
+                val url = URL(backendUrl)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.doOutput = true
 
-        client.checkLocationSettings(builder.build()).addOnSuccessListener {
-            startSecurityMonitoring()
-        }.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(this, 101)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    // Intentionally caught fallback
+                val jsonPayload = JSONObject().apply {
+                    put("user_id", currentUserId)
+                    put("zone_name", name)
+                    put("latitude", lat)
+                    put("longitude", lon)
+                    put("radius_meters", radius)
                 }
+
+                OutputStreamWriter(conn.outputStream).use { os ->
+                    os.write(jsonPayload.toString())
+                    os.flush()
+                }
+
+                if (conn.responseCode == 201) {
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(this, "Success: Threat broadcasted globally!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                conn.disconnect()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
 
+    private fun checkLocationHardwareAndPermissions() {
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+        if (!isGpsEnabled) {
+            AlertDialog.Builder(this)
+                .setTitle("Location Hardware Disabled")
+                .setMessage("SecureSphere requires active hardware GPS tracking to monitor safety limits. Please enable it.")
+                .setPositiveButton("Open Settings") { _, _ ->
+                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+            return
+        }
+
+        val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (permissions.any { ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }) {
+            ActivityCompat.requestPermissions(this, permissions, 400)
+        } else {
+            startSecurityMonitoringEngine()
+        }
+    }
+
     @SuppressLint("MissingPermission")
-    private fun startSecurityMonitoring() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000)
-            .setMinUpdateIntervalMillis(1000)
+    private fun startSecurityMonitoringEngine() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000)
+            .setMinUpdateIntervalMillis(1500)
             .build()
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                if (!isSharingEnabled) return
                 val currentGpsData = locationResult.lastLocation ?: return
                 val currentGeoPoint = GeoPoint(currentGpsData.latitude, currentGpsData.longitude)
 
                 if (userLocationMarker == null) {
-                    map.controller.setCenter(currentGeoPoint)
                     map.controller.animateTo(currentGeoPoint)
-
                     userLocationMarker = Marker(map).apply {
                         position = currentGeoPoint
-                        title = "Your Position"
+                        title = "Current Tracking Profile"
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     }
                     map.overlays.add(userLocationMarker)
@@ -244,32 +230,24 @@ class RiskyShareActivity : AppCompatActivity() {
                     userLocationMarker?.position = currentGeoPoint
                 }
 
-                evaluateProximityAlerts(currentGpsData)
+                checkRiskyProximityLocally(currentGpsData)
 
-                val payload = mapOf(
-                    "latitude" to currentGpsData.latitude,
-                    "longitude" to currentGpsData.longitude,
-                    "timestamp" to System.currentTimeMillis()
-                )
-                dbRef.child(currentUserId).setValue(payload)
+                if (isSharingEnabled) {
+                    val payload = mapOf(
+                        "latitude" to currentGpsData.latitude,
+                        "longitude" to currentGpsData.longitude,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    dbRef.child(currentUserId).setValue(payload)
+                }
                 map.invalidate()
             }
         }
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, mainLooper)
     }
 
-    private fun evaluateProximityAlerts(userLocation: Location) {
-        val etContact1 = findViewById<EditText>(R.id.etContact1)
-        val etContact2 = findViewById<EditText>(R.id.etContact2)
-        val email1 = etContact1.text.toString().trim()
-        val email2 = etContact2.text.toString().trim()
-
-        val zonesList: List<Pair<CustomRiskyZone, String>> = userDefinedZones
-        for (i in 0 until zonesList.size) {
-            val item = zonesList[i]
-            val zone = item.first
-            val type = item.second
-
+    private fun checkRiskyProximityLocally(userLocation: Location) {
+        for (zone in userDefinedZones) {
             val computationResult = FloatArray(1)
             Location.distanceBetween(
                 userLocation.latitude, userLocation.longitude,
@@ -278,37 +256,39 @@ class RiskyShareActivity : AppCompatActivity() {
             )
 
             if (computationResult[0] <= zone.radiusMeters) {
-                if (type == "DANGER") {
-                    Toast.makeText(this, "🚨 CRITICAL BREACH: Inside Danger Zone: ${zone.name}!", Toast.LENGTH_SHORT).show()
-                    if (email1.isNotEmpty() || email2.isNotEmpty()) {
-                        triggerEmergencySmsPipeline(zone.name, userLocation.latitude, userLocation.longitude, email1, email2)
-                    }
-                } else {
-                    Toast.makeText(this, "🍏 Safe Perimeter Confirmed: ${zone.name}", Toast.LENGTH_SHORT).show()
+                if (!isEmergencyFired) {
+                    isEmergencyFired = true
+                    triggerEmergencyProtocol(zone.name)
                 }
+                return
             }
         }
+        isEmergencyFired = false
     }
 
-    private fun triggerEmergencySmsPipeline(zoneName: String, lat: Double, lng: Double, email1: String, email2: String) {
-        val emergencyMessage = "CRITICAL ALERT: Target has entered Unsafe Area [ $zoneName ]. Current Fix: http://maps.google.com/?q=$lat,$lng"
-
-        val sosRef = FirebaseDatabase.getInstance().getReference("emergency_alerts").child(currentUserId)
-        val alertPayload = mapOf(
-            "status" to "CRITICAL_BREACH",
-            "message" to emergencyMessage,
-            "dangerZone" to zoneName,
-            "latitude" to lat,
-            "longitude" to lng,
-            "notifiedContacts" to listOf(email1, email2),
-            "timestamp" to System.currentTimeMillis()
-        )
-        sosRef.setValue(alertPayload)
+    private fun triggerEmergencyProtocol(zoneTitle: String) {
+        AlertDialog.Builder(this)
+            .setTitle("🚨 CRITICAL SECURITY INFRACTION")
+            .setMessage("You have entered a flagged threat zone: $zoneTitle. Would you like to launch an immediate crisis dial to your emergency contacts?")
+            .setCancelable(false)
+            .setPositiveButton("DIAL EMERGENCY LINE") { _, _ ->
+                val emergencyNumber = "15"
+                val callIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$emergencyNumber")
+                }
+                startActivity(callIntent)
+            }
+            .setNegativeButton("DISMISS", null)
+            .show()
     }
 
-    private fun stopLocationUpdates() {
-        if (::locationCallback.isInitialized) {
-            fusedLocationClient.removeLocationUpdates(locationCallback)
+    override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, gr: IntArray) {
+        super.onRequestPermissionsResult(rc, p, gr)
+        if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) {
+            startSecurityMonitoringEngine()
+        } else {
+            Toast.makeText(this, "Security parameters rejected.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -316,7 +296,7 @@ class RiskyShareActivity : AppCompatActivity() {
     override fun onPause() { super.onPause(); map.onPause() }
     override fun onDestroy() {
         super.onDestroy()
-        stopLocationUpdates()
+        if (::locationCallback.isInitialized) fusedLocationClient.removeLocationUpdates(locationCallback)
         if (isSharingEnabled) dbRef.child(currentUserId).removeValue()
     }
 }
