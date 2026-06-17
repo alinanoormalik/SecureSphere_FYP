@@ -36,7 +36,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-
 class RiskyShareActivity : AppCompatActivity() {
 
     private lateinit var map: MapView
@@ -45,10 +44,9 @@ class RiskyShareActivity : AppCompatActivity() {
 
     private val dbRef = FirebaseDatabase.getInstance().getReference("live_locations")
     private val currentUserId = "fyp_test_user"
+    private val backendUrl = "http://10.0.2.2:5000/api/save-zone" // 10.0.2.2 maps directly to your laptop's localhost inside an Android Emulator
 
-    // Replace this string link with your actual PythonAnywhere URL later!
-    private val backendUrl = "http://127.0.0.1:5000/api/save-zone"
-
+    // Uses the CustomRiskyZone data class defined globally in LocationDbHelper.kt
     private val userDefinedZones = mutableListOf<CustomRiskyZone>()
     private var userLocationMarker: Marker? = null
     private var isSharingEnabled = false
@@ -66,7 +64,7 @@ class RiskyShareActivity : AppCompatActivity() {
         map = findViewById(R.id.mapView)
 
         map.setMultiTouchControls(true)
-        map.controller.setZoom(16.0)
+        map.controller.setZoom(17.5)
 
         setupMapInteractions()
 
@@ -86,6 +84,7 @@ class RiskyShareActivity : AppCompatActivity() {
         val mReceive = object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean = false
 
+            // LONG PRESS ON MAP CRITERIA
             override fun longPressHelper(p: GeoPoint?): Boolean {
                 p?.let { showCreateZoneDialog(it) }
                 return true
@@ -96,25 +95,25 @@ class RiskyShareActivity : AppCompatActivity() {
 
     private fun showCreateZoneDialog(geoPoint: GeoPoint) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Flag Dangerous Environment Globally")
+        builder.setTitle("Flag Dangerous Zone Globally")
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
 
-        val inputName = EditText(this).apply { hint = "Threat Description (e.g., Dark Alleyway)" }
+        val inputName = EditText(this).apply { hint = "Zone Name (e.g., Unlit Area)" }
         layout.addView(inputName)
 
         val inputRadius = EditText(this).apply {
-            hint = "Danger Radius in meters (e.g., 200)"
+            hint = "Danger Radius in meters (e.g., 100)"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
         layout.addView(inputRadius)
 
         builder.setView(layout)
 
-        builder.setPositiveButton("Publish to SecureSphere Cloud") { dialog, _ ->
+        builder.setPositiveButton("Save and Secure Area") { dialog, _ ->
             val name = inputName.text.toString().trim()
             val radiusStr = inputRadius.text.toString().trim()
 
@@ -143,10 +142,11 @@ class RiskyShareActivity : AppCompatActivity() {
             points = Polygon.pointsAsCircle(geoPoint, radius.toDouble())
             fillColor = Color.argb(60, 244, 67, 54)
             strokeColor = Color.RED
-            strokeWidth = 2f
+            strokeWidth = 3f
         }
         map.overlays.add(circle)
         map.invalidate()
+        Toast.makeText(this, "Dangerous zone deployed on map surface!", Toast.LENGTH_SHORT).show()
     }
 
     private fun sendZoneToBackendAPI(name: String, lat: Double, lon: Double, radius: Float) {
@@ -170,12 +170,7 @@ class RiskyShareActivity : AppCompatActivity() {
                     os.write(jsonPayload.toString())
                     os.flush()
                 }
-
-                if (conn.responseCode == 201) {
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(this, "Success: Threat broadcasted globally!", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                conn.responseCode
                 conn.disconnect()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -189,9 +184,9 @@ class RiskyShareActivity : AppCompatActivity() {
 
         if (!isGpsEnabled) {
             AlertDialog.Builder(this)
-                .setTitle("Location Hardware Disabled")
-                .setMessage("SecureSphere requires active hardware GPS tracking to monitor safety limits. Please enable it.")
-                .setPositiveButton("Open Settings") { _, _ ->
+                .setTitle("GPS Hardware Required")
+                .setMessage("Please turn on your system location services/GPS hardware to lock onto your coordinates.")
+                .setPositiveButton("Turn On GPS") { _, _ ->
                     startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }
                 .setNegativeButton("Cancel", null)
@@ -203,14 +198,42 @@ class RiskyShareActivity : AppCompatActivity() {
         if (permissions.any { ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }) {
             ActivityCompat.requestPermissions(this, permissions, 400)
         } else {
-            startSecurityMonitoringEngine()
+            getExactInitialLocationFix()
+        }
+    }
+
+    // THE CORE LOCATION FIX ENGINE
+    @SuppressLint("MissingPermission")
+    private fun getExactInitialLocationFix() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                val currentGeoPoint = GeoPoint(location.latitude, location.longitude)
+                map.controller.setCenter(currentGeoPoint)
+                updateLocationMarkerOnMap(currentGeoPoint)
+                startSecurityMonitoringEngine()
+            } else {
+                // FORCE ENGINE FALLBACK: Solves the empty location cache issue immediately
+                val activeRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+                    .setMaxUpdates(1)
+                    .build()
+
+                fusedLocationClient.requestLocationUpdates(activeRequest, object : LocationCallback() {
+                    override fun onLocationResult(locationResult: LocationResult) {
+                        val freshLocation = locationResult.lastLocation ?: return
+                        val freshGeoPoint = GeoPoint(freshLocation.latitude, freshLocation.longitude)
+                        map.controller.setCenter(freshGeoPoint)
+                        updateLocationMarkerOnMap(freshGeoPoint)
+                        startSecurityMonitoringEngine()
+                    }
+                }, mainLooper)
+            }
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun startSecurityMonitoringEngine() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000)
-            .setMinUpdateIntervalMillis(1500)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000)
+            .setMinUpdateIntervalMillis(1000)
             .build()
 
         locationCallback = object : LocationCallback() {
@@ -218,18 +241,7 @@ class RiskyShareActivity : AppCompatActivity() {
                 val currentGpsData = locationResult.lastLocation ?: return
                 val currentGeoPoint = GeoPoint(currentGpsData.latitude, currentGpsData.longitude)
 
-                if (userLocationMarker == null) {
-                    map.controller.animateTo(currentGeoPoint)
-                    userLocationMarker = Marker(map).apply {
-                        position = currentGeoPoint
-                        title = "Current Tracking Profile"
-                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    }
-                    map.overlays.add(userLocationMarker)
-                } else {
-                    userLocationMarker?.position = currentGeoPoint
-                }
-
+                updateLocationMarkerOnMap(currentGeoPoint)
                 checkRiskyProximityLocally(currentGpsData)
 
                 if (isSharingEnabled) {
@@ -240,10 +252,23 @@ class RiskyShareActivity : AppCompatActivity() {
                     )
                     dbRef.child(currentUserId).setValue(payload)
                 }
-                map.invalidate()
             }
         }
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, mainLooper)
+    }
+
+    private fun updateLocationMarkerOnMap(geoPoint: GeoPoint) {
+        if (userLocationMarker == null) {
+            userLocationMarker = Marker(map).apply {
+                position = geoPoint
+                title = "Your Position"
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            }
+            map.overlays.add(userLocationMarker)
+        } else {
+            userLocationMarker?.position = geoPoint
+        }
+        map.invalidate()
     }
 
     private fun checkRiskyProximityLocally(userLocation: Location) {
@@ -266,12 +291,13 @@ class RiskyShareActivity : AppCompatActivity() {
         isEmergencyFired = false
     }
 
+    // THE EMERGENCY PROTOCOLS AND CONTACT PHONE DIALER
     private fun triggerEmergencyProtocol(zoneTitle: String) {
         AlertDialog.Builder(this)
-            .setTitle("🚨 CRITICAL SECURITY INFRACTION")
-            .setMessage("You have entered a flagged threat zone: $zoneTitle. Would you like to launch an immediate crisis dial to your emergency contacts?")
+            .setTitle("🚨 WARNING: RISKY AREA DETECTED")
+            .setMessage("You have entered a restricted threat perimeter: '$zoneTitle'. Would you like to call your emergency contact instantly?")
             .setCancelable(false)
-            .setPositiveButton("DIAL EMERGENCY LINE") { _, _ ->
+            .setPositiveButton("CALL NOW") { _, _ ->
                 val emergencyNumber = "15"
                 val callIntent = Intent(Intent.ACTION_DIAL).apply {
                     data = Uri.parse("tel:$emergencyNumber")
@@ -285,9 +311,9 @@ class RiskyShareActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, gr: IntArray) {
         super.onRequestPermissionsResult(rc, p, gr)
         if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) {
-            startSecurityMonitoringEngine()
+            getExactInitialLocationFix()
         } else {
-            Toast.makeText(this, "Security parameters rejected.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Location permission rejected.", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
