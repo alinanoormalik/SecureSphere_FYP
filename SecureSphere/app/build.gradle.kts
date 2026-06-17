@@ -49,6 +49,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.warrenstrange:googleauth:1.5.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // --- FIREBASE SETUP ---
     // 1. The Bill of Materials (Keeps versions compatible)
