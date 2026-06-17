@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="26dp"
-    android:background="#1A1524">
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +16,8 @@
         <View
             android:layout_width="6dp"
             android:layout_height="45dp"
-            android:background="#BB86FC"/>
+            android:background="?attr/colorPrimary"/>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -27,46 +28,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SecureSphere User"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
             <TextView
                 android:id="@+id/tvSettingsUserEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="loading telemetry parameters..."
-                android:textColor="#A599B5"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"/>
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#251E33"
-        android:padding="12dp"
-        android:orientation="vertical"
-        android:layout_marginBottom="16dp">
+        android:paddingBottom="12dp"
+        android:layout_marginBottom="12dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🛡️ System Shield Status: ENFORCED"
-            android:textColor="#4CAF50"
-            android:textSize="12sp"
-            android:textStyle="bold"/>
-        <TextView
+            android:text="🌙 Dark Engine Core"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            android:layout_centerVertical="true"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📦 Local Database Vault: Encrypted (AES-256)"
-            android:textColor="#A599B5"
-            android:textSize="11sp"
-            android:layout_marginTop="2dp"/>
-    </LinearLayout>
+            android:layout_alignParentEnd="true"
+            app:thumbTint="?attr/colorPrimary"
+            app:trackTint="?attr/colorOutline"/>
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#2E253D"
+        android:background="?attr/colorOutlineVariant"
         android:layout_marginBottom="12dp" />
 
     <Button
@@ -74,7 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="Your Information"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="start|center_vertical"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:textAllCaps="false"/>
@@ -84,7 +82,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="Change Password"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="start|center_vertical"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:textAllCaps="false"/>
@@ -94,7 +92,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="About SecureSphere"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="start|center_vertical"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:textAllCaps="false"/>
@@ -104,42 +102,19 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="Transmit Feedback"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="start|center_vertical"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:textAllCaps="false"
         android:layout_marginBottom="12dp"/>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="12dp"
-        android:layout_marginBottom="24dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🌙 Dark Engine Core"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:layout_centerVertical="true"/>
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            app:thumbTint="#BB86FC"
-            app:trackTint="#46385C"/>
-    </RelativeLayout>
-
-
 
     <Button
         android:id="@+id/btnDialogDisconnect"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:text="Log Out"
-        android:backgroundTint="#BB86FC"
-        android:textColor="#121212"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:textAllCaps="false"
         style="@style/Widget.MaterialComponents.Button"

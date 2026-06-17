@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
-    android:padding="16dp">
+    android:background="?attr/colorSurface"
+    android:padding="26dp"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,61 +15,73 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Social Media Breach &amp; Audit Engine"
-            android:textColor="#FFFFFF"
+            android:text="Identity Breach &amp; Audit Engine"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
-        <EditText
-            android:id="@+id/etBreachEmail"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter email address to evaluate"
-            android:textColorHint="#757575"
-            android:textColor="#FFFFFF"
-            android:inputType="textEmailAddress"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="20dp"
+            app:hintTextColor="?attr/colorPrimary"
+            app:boxStrokeColor="?attr/colorPrimary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBreachEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter email address to evaluate"
+                android:inputType="textEmailAddress"
+                android:textColor="?attr/colorOnSurface" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Active Posture Self-Assessment Options:"
-            android:textColor="#B0BEC5"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="10dp"/>
 
         <CheckBox
             android:id="@+id/cb2FA"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Two-Factor Authentication (2FA) is Disabled"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="8dp"/>
+            android:textColor="?attr/colorOnSurface"
+            android:buttonTint="?attr/colorPrimary"
+            android:layout_marginBottom="3dp"/>
 
         <CheckBox
             android:id="@+id/cbReuse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="I reuse passwords across multiple social profiles"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="8dp"/>
+            android:text="I reuse passwords across profiles"
+            android:textColor="?attr/colorOnSurface"
+            android:buttonTint="?attr/colorPrimary"
+            android:layout_marginBottom="3dp"/>
 
         <CheckBox
             android:id="@+id/cbLegacy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Outdated / Legacy applications have profile access"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="20dp"/>
+            android:text="Outdated / Legacy app access"
+            android:textColor="?attr/colorOnSurface"
+            android:buttonTint="?attr/colorPrimary"
+            android:layout_marginBottom="24dp"/>
 
         <Button
             android:id="@+id/btnCheckBreach"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="Run Security Audit"
-            android:backgroundTint="#1E88E5"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
+            android:textStyle="bold"
+            android:textAllCaps="false"
             android:layout_marginBottom="24dp"/>
 
         <LinearLayout
@@ -75,7 +89,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#1E1E1E"
+            android:background="?attr/colorSurfaceVariant"
             android:padding="16dp"
             android:visibility="gone">
 
@@ -84,26 +98,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="LOW RISK"
-                android:padding="8dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
                 android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:background="@drawable/circle_background"
                 android:layout_marginBottom="12dp"/>
 
             <TextView
                 android:id="@+id/tvBreachResult"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Identified Exposure Sources:"
-                android:textColor="#B0BEC5"
-                android:textSize="12sp"
-                android:layout_marginBottom="6dp"/>
 
             <LinearLayout
                 android:id="@+id/dynamicBreachList"

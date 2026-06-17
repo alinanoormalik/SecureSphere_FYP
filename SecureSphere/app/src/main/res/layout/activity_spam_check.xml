@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="20dp">
+    android:padding="26dp"
+    android:background="?attr/colorSurface">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,20 +14,35 @@
         android:text="Spam Detector"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="20dp"/>
 
-    <EditText
-        android:id="@+id/etUrlInput"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Paste URL here"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="20dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etUrlInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Paste URL here"
+            android:inputType="textUri"
+            android:textColor="?attr/colorOnSurface"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnScan"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="SCAN LINK"/>
+        android:layout_height="60dp"
+        android:text="SCAN LINK"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/tvResult"
@@ -33,5 +50,6 @@
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
         android:layout_marginTop="20dp"/>
 </LinearLayout>

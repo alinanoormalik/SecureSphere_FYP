@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:gravity="center_horizontal">
+    android:padding="26dp"
+    android:gravity="center_horizontal"
+    android:background="?attr/colorSurface">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,25 +14,35 @@
         android:text="Caller Identification"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="#009688"
+        android:textColor="?attr/colorPrimary"
         android:layout_marginBottom="30dp"/>
 
-    <EditText
-        android:id="@+id/etPhoneInput"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Phone Number (e.g. 03001234567)"
-        android:inputType="phone"
-        android:minHeight="50dp"
-        android:background="#EEE"
-        android:padding="10dp"/>
+        android:layout_marginBottom="20dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPhoneInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Phone Number"
+            android:inputType="phone"
+            android:minHeight="50dp"
+            android:textColor="?attr/colorOnSurface"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnIdentify"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:text="Identify Caller"
-        android:backgroundTint="#009688"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:layout_marginTop="20dp"/>
 
     <TextView
@@ -40,6 +52,7 @@
         android:text="..."
         android:textSize="22sp"
         android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
         android:layout_marginTop="30dp"/>
 
 </LinearLayout>

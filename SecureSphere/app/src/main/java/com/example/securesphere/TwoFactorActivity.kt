@@ -2,42 +2,70 @@ package com.example.securesphere
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class TwoFactorActivity : AppCompatActivity() {
-
-    private lateinit var mAuth: FirebaseAuth
-    // Simulation placeholder token - replaces direct production SMTP relays for seamless local debugging
-    private val expectedSecureToken = "123456"
+    private val client = OkHttpClient()
+    private lateinit var tvTimer: TextView
+    private lateinit var etCode: TextInputEditText
+    private lateinit var btnVerify: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_two_factor)
 
-        mAuth = FirebaseAuth.getInstance()
-        val etCode = findViewById<TextInputEditText>(R.id.etVerificationCode)
-        val btnVerify = findViewById<Button>(R.id.btnVerifyCode)
+        etCode = findViewById(R.id.etVerificationCode)
+        btnVerify = findViewById(R.id.btnVerifyCode)
+        tvTimer = findViewById(R.id.tvTimer)
 
-        // Dev Debug Notification to simplify local execution validation tests
-        Toast.makeText(this, "SecureSphere Bypass Token: $expectedSecureToken", Toast.LENGTH_LONG).show()
+        startTimer()
 
         btnVerify.setOnClickListener {
-            val systemTokenInput = etCode.text.toString().trim()
-
-            if (systemTokenInput == expectedSecureToken) {
-                Toast.makeText(this, "Identity Authenticated! Access Granted.", Toast.LENGTH_SHORT).show()
-
-                // Route safely into workspace core terminal workspace area
-                val intent = Intent(this, DashboardActivity::class.java)
-                startActivity(intent)
-                finish()
-            } else {
-                Toast.makeText(this, getString(R.string.error_invalid_code), Toast.LENGTH_SHORT).show()
-            }
+            verifyCode(etCode.text.toString())
         }
+    }
+
+    private fun startTimer() {
+        object : CountDownTimer(60000, 1000) {
+            override fun onTick(millis: Long) {
+                tvTimer.text = "Code expires in: 00:${millis / 1000}"
+            }
+            override fun onFinish() {
+                tvTimer.text = "Expired"
+                etCode.isEnabled = false
+                btnVerify.isEnabled = false
+            }
+        }.start()
+    }
+
+    private fun verifyCode(code: String) {
+        val json = JSONObject().put("email", "user@example.com").put("code", code)
+        val body = json.toString().toRequestBody("application/json".toMediaType())
+        val request = Request.Builder().url("YOUR_PYTHONANYWHERE_URL/verify-2fa").post(body).build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) { /* Handle error */ }
+            override fun onResponse(call: Call, response: Response) {
+                val success = response.isSuccessful
+                runOnUiThread {
+                    if (success) {
+                        startActivity(Intent(this@TwoFactorActivity, DashboardActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this@TwoFactorActivity, "Invalid or Expired", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 }

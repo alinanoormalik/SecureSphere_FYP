@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:gravity="center_horizontal">
+    android:padding="26dp"
+    android:gravity="center_horizontal"
+    android:background="?attr/colorSurface">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,23 +14,36 @@
         android:text="Email Scanner"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="24dp"/>
 
-    <EditText
-        android:id="@+id/etEmailText"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:hint="Paste email content here..."
-        android:gravity="top"
-        android:background="#EEE"
-        android:padding="10dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmailText"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:hint="Paste email content here..."
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:textColor="?attr/colorOnSurface" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnScanEmail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="Check for Fraud"
-        android:layout_marginTop="20dp"/>
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
+        android:layout_marginTop="10dp"/>
 
     <TextView
         android:id="@+id/tvEmailResult"
@@ -36,6 +51,7 @@
         android:layout_height="wrap_content"
         android:text="..."
         android:textSize="20sp"
-        android:layout_marginTop="20dp"/>
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginTop="30dp"/>
 
 </LinearLayout>

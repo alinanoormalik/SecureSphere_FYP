@@ -1,13 +1,11 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SecureSphere" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
+<resources>
+    <style name="Theme.SecureSphere" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purple_500</item>
 
-    <style name="Theme.SecureSphere" parent="Base.Theme.SecureSphere" />
-    <style name="CustomDialogTheme" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="android:background">#16121E</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorSurface">#FFFBFF</item>
+        <item name="colorSurfaceVariant">#E7E0EC</item>
+
+        <item name="colorOnSurface">#1C1B1F</item>
+        <item name="colorOnSurfaceVariant">#49454E</item>
     </style>
 </resources>

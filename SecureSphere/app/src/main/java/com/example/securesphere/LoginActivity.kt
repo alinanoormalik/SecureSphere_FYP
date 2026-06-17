@@ -25,7 +25,7 @@ class LoginActivity : AppCompatActivity() {
         val etEmail = findViewById<TextInputEditText>(R.id.etLoginEmail)
         val etPassword = findViewById<TextInputEditText>(R.id.etLoginPassword)
         val cbRememberMe = findViewById<CheckBox>(R.id.cbRememberMe)
-        val btnLogin = findViewById<Button>(R.id.btnLoginSubmit)
+        val btnLogin = findViewById<Button>(R.id.btnLogin)
         val tvSignUpLink = findViewById<TextView>(R.id.tvNavigateToSignUp)
 
         tvSignUpLink.setOnClickListener {

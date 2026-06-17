@@ -1,17 +1,18 @@
 package com.example.securesphere
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import java.util.concurrent.Executor
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -23,7 +24,7 @@ class DashboardActivity : AppCompatActivity() {
 
         mAuth = FirebaseAuth.getInstance()
 
-        // Mapped UI component hooks synchronized with your exact CardView layout elements
+        // Existing CardView hooks
         val btnSpamUrl = findViewById<CardView>(R.id.btnCheckSpamUrl)
         val btnEmailSpam = findViewById<CardView>(R.id.btnCheckEmailSpam)
         val btnIdentityBreach = findViewById<CardView>(R.id.btnCheckIdentityBreach)
@@ -33,105 +34,96 @@ class DashboardActivity : AppCompatActivity() {
         val btnMalwareAnalysis = findViewById<CardView>(R.id.btnMalwareAnalysis)
         val btnRiskyArea = findViewById<CardView>(R.id.btnRiskyAreaLocation)
 
-        btnSpamUrl.setOnClickListener {
-            // Intent handling when ready
-        }
+        btnSpamUrl.setOnClickListener { startActivity(Intent(this, SpamCheckActivity::class.java)) }
+        btnEmailSpam.setOnClickListener { startActivity(Intent(this, EmailActivity::class.java)) }
+        btnIdentityBreach.setOnClickListener { startActivity(Intent(this, BreachCheckActivity::class.java)) }
+        btnCallerId.setOnClickListener { startActivity(Intent(this, CallerIDActivity::class.java)) }
+        btnPasswordVault.setOnClickListener { startActivity(Intent(this, PasswordManagerActivity::class.java)) }
+        btnImageVault.setOnClickListener { startActivity(Intent(this, HiddenImagesActivity::class.java)) }
+        btnMalwareAnalysis.setOnClickListener { startActivity(Intent(this, MalwareAnalysisActivity::class.java)) }
+        btnRiskyArea.setOnClickListener { startActivity(Intent(this, RiskyShareActivity::class.java)) }
 
-        btnEmailSpam.setOnClickListener {
-            startActivity(Intent(this, EmailActivity::class.java))
-        }
-
-        btnIdentityBreach.setOnClickListener {
-            startActivity(Intent(this, BreachCheckActivity::class.java))
-        }
-
-        btnCallerId.setOnClickListener {
-            startActivity(Intent(this, CallerIDActivity::class.java))
-        }
-
-        btnPasswordVault.setOnClickListener {
-            startActivity(Intent(this, PasswordManagerActivity::class.java))
-        }
-
-        btnImageVault.setOnClickListener {
-            startActivity(Intent(this, HiddenImagesActivity::class.java))
-        }
-
-        btnMalwareAnalysis.setOnClickListener {
-            // Intent handling when ready
-        }
-
-        btnRiskyArea.setOnClickListener {
-            startActivity(Intent(this, RiskyShareActivity::class.java))
-        }
-
-        // Fixed FrameLayout user avatar profile anchor element
         val btnProfileSettings = findViewById<FrameLayout>(R.id.btnProfile)
-        btnProfileSettings.setOnClickListener {
-            renderProfileSettingsEngine()
-        }
+        btnProfileSettings.setOnClickListener { renderProfileSettingsEngine() }
     }
 
-    /**
-     * Inflates custom dialogue overlay modules matching your dialog layouts exactly
-     */
     private fun renderProfileSettingsEngine() {
         val currentUserNode = mAuth.currentUser
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_profile_settings, null)
+        val dialogBuilder = AlertDialog.Builder(this).setView(dialogView).create()
 
-        val tvProfileName = dialogView.findViewById<TextView>(R.id.tvSettingsUserName)
-        val tvProfileEmail = dialogView.findViewById<TextView>(R.id.tvSettingsUserEmail)
-        val btnChangePassword = dialogView.findViewById<Button>(R.id.btnDialogChangePassword)
-        val btnDisconnectSession = dialogView.findViewById<Button>(R.id.btnDialogDisconnect)
+        // UI elements
+        dialogView.findViewById<TextView>(R.id.tvSettingsUserName).text = currentUserNode?.displayName ?: "SecureSphere User"
+        dialogView.findViewById<TextView>(R.id.tvSettingsUserEmail).text = currentUserNode?.email ?: "No Registered Session"
 
-        // Binding actual text data from auth node safely
-        tvProfileName.text = currentUserNode?.displayName ?: "SecureSphere User"
-        tvProfileEmail.text = currentUserNode?.email ?: "No Registered Session Found"
-
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        btnChangePassword.setOnClickListener {
-            val passwordField = EditText(this).apply {
-                hint = "Minimum 6 characters"
-                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
-
-            AlertDialog.Builder(this)
-                .setTitle("Update Security Access Credentials")
-                .setMessage("Enter your new system authorization passphrase:")
-                .setView(passwordField)
-                .setPositiveButton("CONFIRM") { _, _ ->
-                    val freshPassphrase = passwordField.text.toString().trim()
-                    if (freshPassphrase.length >= 6) {
-                        currentUserNode?.updatePassword(freshPassphrase)
-                            ?.addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    Toast.makeText(this, "Passphrase updated. System re-secured.", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(this, "Modification Denied: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                                }
-                            }
-                    } else {
-                        Toast.makeText(this, "Security parameters validation failed: Weak Passphrase.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .setNegativeButton("CANCEL", null)
+        // 1. YOUR INFORMATION
+        dialogView.findViewById<Button>(R.id.btnYourInformation).setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Your Information")
+                .setMessage("Name: ${currentUserNode?.displayName ?: "N/A"}\nEmail: ${currentUserNode?.email ?: "N/A"}")
+                .setPositiveButton("OK", null)
                 .show()
         }
 
-        // Disconnect session and routing back to log in
-        btnDisconnectSession.setOnClickListener {
+        // 2. CHANGE PASSWORD (Biometric Auth First)
+        dialogView.findViewById<Button>(R.id.btnDialogChangePassword).setOnClickListener {
+            showBiometricPrompt {
+                // Biometric Success -> Open Password Change Dialog
+                openPasswordChangeDialog()
+            }
+        }
+
+        // 3. ABOUT
+        dialogView.findViewById<Button>(R.id.btnAboutApp).setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("About SecureSphere")
+                .setMessage("SecureSphere v1.0\nYour all-in-one security and privacy companion.")
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
+        // 4. TRANSMIT FEEDBACK
+        dialogView.findViewById<Button>(R.id.btnSendFeedback).setOnClickListener {
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:support@securesphere.com")
+                putExtra(Intent.EXTRA_SUBJECT, "Feedback from SecureSphere User")
+            }
+            startActivity(Intent.createChooser(intent, "Send Feedback"))
+        }
+
+        dialogView.findViewById<Button>(R.id.btnDialogDisconnect).setOnClickListener {
             dialogBuilder.dismiss()
             mAuth.signOut()
-            Toast.makeText(this, "Account Session Revoked.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
-
         dialogBuilder.show()
+    }
+
+    private fun showBiometricPrompt(onSuccess: () -> Unit) {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                onSuccess()
+            }
+        })
+        biometricPrompt.authenticate(BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Identity Verification").setSubtitle("Confirm fingerprint to proceed").setNegativeButtonText("Cancel").build())
+    }
+
+    private fun openPasswordChangeDialog() {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null)
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Change Password")
+            .setView(view)
+            .setPositiveButton("Update") { _, _ ->
+                val newPass = view.findViewById<EditText>(R.id.etNewPassword).text.toString()
+                mAuth.currentUser?.updatePassword(newPass)?.addOnCompleteListener { task ->
+                    if (task.isSuccessful) Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+                }
+            }.show()
     }
 }

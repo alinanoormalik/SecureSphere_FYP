@@ -6,13 +6,13 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="32dp"
-    android:background="?android:attr/windowBackground">
+    android:background="?attr/colorSurface">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/title_signup"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="28sp"
         android:textStyle="bold"
         android:layout_marginBottom="32dp"/>
@@ -21,6 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSignUpName"
@@ -28,13 +30,15 @@
             android:layout_height="wrap_content"
             android:hint="@string/hint_full_name"
             android:inputType="textPersonName"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textColor="?attr/colorOnSurface"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSignUpEmail"
@@ -42,22 +46,25 @@
             android:layout_height="wrap_content"
             android:hint="@string/hint_email"
             android:inputType="textEmailAddress"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textColor="?attr/colorOnSurface"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        app:passwordToggleEnabled="true">
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary"
+        app:passwordToggleEnabled="true"
+        app:passwordToggleTint="?attr/colorPrimary"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSignUpPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_password"
             android:inputType="textPassword"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textColor="?attr/colorOnSurface"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
@@ -65,8 +72,8 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:text="@string/action_signup"
-        android:backgroundTint="#BB86FC"
-        android:textColor="#121212"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"
         style="@style/Widget.MaterialComponents.Button"/>
@@ -76,7 +83,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/switch_to_login"
-        android:textColor="#BB86FC"
+        android:textColor="?attr/colorPrimary"
         android:textSize="14sp"
         android:clickable="true"
         android:focusable="true"/>

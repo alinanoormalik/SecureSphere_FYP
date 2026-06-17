@@ -4,75 +4,78 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:padding="26dp"
     android:gravity="center"
-    android:padding="32dp"
-    android:background="?android:attr/windowBackground">
+    android:background="?attr/colorSurface">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/title_login"
-        android:textColor="?android:attr/textColorPrimary"
+        android:text="SecureSphere Login"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp"/>
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="40dp"/>
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLoginEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_email"
+            android:hint="Email"
             android:inputType="textEmailAddress"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        app:passwordToggleEnabled="true">
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLoginPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_password"
+            android:hint="Password"
             android:inputType="textPassword"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
         android:id="@+id/cbRememberMe"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_remember_me"
-        android:textColor="?android:attr/textColorSecondary"
-        android:layout_marginBottom="24dp"
-        android:buttonTint="#BB86FC"/>
+        android:text="Remember me (Skip 2FA)"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_gravity="start"
+        android:layout_marginBottom="16dp"/>
 
     <Button
-        android:id="@+id/btnLoginSubmit"
+        android:id="@+id/btnLogin"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:text="@string/action_login"
-        android:backgroundTint="#BB86FC"
-        android:textColor="#121212"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"
-        style="@style/Widget.MaterialComponents.Button"/>
+        android:layout_height="60dp"
+        android:text="Login"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary" />
 
     <TextView
         android:id="@+id/tvNavigateToSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/switch_to_signup"
-        android:textColor="#BB86FC"
-        android:textSize="14sp"
+        android:text="New here? Create an account"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginTop="20dp"
         android:clickable="true"
-        android:focusable="true"/>
+        android:focusable="true"
+        android:textSize="14sp"/>
+
 </LinearLayout>

@@ -6,13 +6,15 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="32dp"
-    android:background="?android:attr/windowBackground">
+    android:background="?attr/colorSurface">
+
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/title_two_factor"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="12dp"
@@ -22,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/subtitle_two_factor"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="14sp"
         android:layout_marginBottom="32dp"
         android:gravity="center"/>
@@ -31,6 +33,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:boxStrokeColor="?attr/colorPrimary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etVerificationCode"
@@ -39,19 +43,26 @@
             android:hint="@string/hint_verification_code"
             android:inputType="number"
             android:maxLength="6"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
             android:gravity="center"
             android:textSize="18sp"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:id="@+id/tvTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Code expires in: 01:00"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="16dp"/>
     <Button
         android:id="@+id/btnVerifyCode"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:text="@string/action_verify"
-        android:backgroundTint="#BB86FC"
-        android:textColor="#121212"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         style="@style/Widget.MaterialComponents.Button"/>
 </LinearLayout>
