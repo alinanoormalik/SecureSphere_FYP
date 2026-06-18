@@ -4,54 +4,62 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="26dp"
+    android:padding="24dp"
     android:background="?attr/colorSurface">
 
+    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="24dp">
+
         <View
-            android:layout_width="6dp"
-            android:layout_height="45dp"
+            android:layout_width="4dp"
+            android:layout_height="48dp"
             android:background="?attr/colorPrimary"/>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="14dp">
+            android:layout_marginStart="16dp">
+
             <TextView
                 android:id="@+id/tvSettingsUserName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SecureSphere User"
+                android:text="@string/user_name_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
+
             <TextView
                 android:id="@+id/tvSettingsUserEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/user_email_placeholder"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp"/>
+                android:textSize="14sp"/>
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Dark Mode Row -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="12dp"
-        android:layout_marginBottom="12dp">
+        android:layout_marginBottom="16dp">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🌙 Dark Engine Core"
+            android:text="@string/dark_engine_core"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:layout_centerVertical="true"/>
+
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchTheme"
             android:layout_width="wrap_content"
@@ -61,62 +69,70 @@
             app:trackTint="?attr/colorOutline"/>
     </RelativeLayout>
 
+    <!-- Fixed Divider (No more text in preview) -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?attr/colorOutlineVariant"
         android:layout_marginBottom="12dp" />
 
-    <Button
+    <!-- List Items (Styled as Text Buttons) -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnYourInformation"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Your Information"
+        android:layout_height="56dp"
+        android:text="@string/your_information"
         android:textColor="?attr/colorOnSurface"
         android:gravity="start|center_vertical"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:textAllCaps="false"/>
-
-    <Button
-        android:id="@+id/btnDialogChangePassword"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Change Password"
-        android:textColor="?attr/colorOnSurface"
-        android:gravity="start|center_vertical"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:textAllCaps="false"/>
-
-    <Button
-        android:id="@+id/btnAboutApp"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="About SecureSphere"
-        android:textColor="?attr/colorOnSurface"
-        android:gravity="start|center_vertical"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:textAllCaps="false"/>
-
-    <Button
-        android:id="@+id/btnSendFeedback"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Transmit Feedback"
-        android:textColor="?attr/colorOnSurface"
-        android:gravity="start|center_vertical"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:textAllCaps="false"
-        android:layout_marginBottom="12dp"/>
+        android:paddingHorizontal="0dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDialogChangePassword"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="@string/change_password"
+        android:textColor="?attr/colorOnSurface"
+        android:gravity="start|center_vertical"
+        android:textAllCaps="false"
+        android:paddingHorizontal="0dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAboutApp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="@string/about_securesphere"
+        android:textColor="?attr/colorOnSurface"
+        android:gravity="start|center_vertical"
+        android:textAllCaps="false"
+        android:paddingHorizontal="0dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSendFeedback"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="@string/transmit_feedback"
+        android:textColor="?attr/colorOnSurface"
+        android:gravity="start|center_vertical"
+        android:textAllCaps="false"
+        android:paddingHorizontal="0dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Log Out (MATCHED TO YOUR PURPLE THEME) -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDialogDisconnect"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Log Out"
+        android:layout_height="56dp"
+        android:text="@string/log_out"
         android:backgroundTint="?attr/colorPrimary"
         android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:textAllCaps="false"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_marginTop="12dp"/>
+        app:cornerRadius="12dp"
+        style="@style/Widget.MaterialComponents.Button"/>
+
 </LinearLayout>

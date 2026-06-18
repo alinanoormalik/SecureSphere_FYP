@@ -15,6 +15,22 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
 
+    override fun onStart() {
+        super.onStart()
+        // PROFESSIONAL AUTO-LOGIN: Check if a Firebase session already exists
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val sharedPref = getSharedPreferences("SecureSpherePrefs", Context.MODE_PRIVATE)
+            val skip2FA = sharedPref.getBoolean("Skip2FA_${currentUser.uid}", false)
+
+            if (skip2FA) {
+                // If "Remember Me" was previously selected, skip everything and go to Dashboard
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
@@ -43,20 +59,19 @@ class LoginActivity : AppCompatActivity() {
 
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Check if remember me rule is selected
+                    val userId = mAuth.currentUser?.uid
                     val rememberMeChecked = cbRememberMe.isChecked
-                    sharedPref.edit().putBoolean("Skip2FA_${mAuth.currentUser?.uid}", rememberMeChecked).apply()
+
+                    // Save the "Remember Me" preference for this specific user
+                    sharedPref.edit().putBoolean("Skip2FA_$userId", rememberMeChecked).apply()
 
                     if (rememberMeChecked) {
-                        // Bypass 2FA window completely, head right into active workspace dashboard
-                        Toast.makeText(this, "Welcome! 2FA verification bypassed via token rule.", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, DashboardActivity::class.java)
-                        startActivity(intent)
+                        Toast.makeText(this, "Welcome back! Session persisted.", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, DashboardActivity::class.java))
                         finish()
                     } else {
-                        // Route to your TwoFactorActivity verification channel pipeline
-                        val intent = Intent(this, TwoFactorActivity::class.java)
-                        startActivity(intent)
+                        // User did not check "Remember Me", route to 2FA verification
+                        startActivity(Intent(this, TwoFactorActivity::class.java))
                         finish()
                     }
                 } else {

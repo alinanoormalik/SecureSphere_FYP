@@ -1,11 +1,20 @@
-<resources>
-    <style name="Theme.SecureSphere" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.SecureSphere" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Brand colors -->
         <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
 
+        <!-- UI Surface colors (SWAPPED FOR DARK MODE) -->
         <item name="colorSurface">#121212</item>
-        <item name="colorSurfaceVariant">#2D2B30</item>
+        <item name="colorOnSurface">@color/white</item>
 
-        <item name="colorOnSurface">#E6E1E5</item>
-        <item name="colorOnSurfaceVariant">#CAC4D0</item>
+        <!-- Darker variants for the results container -->
+        <item name="colorSurfaceVariant">#2C2C2C</item>
+        <item name="colorOnSurfaceVariant">#B0B0B0</item>
+        <item name="colorOutline">#404040</item>
+        <item name="colorOutlineVariant">#505050</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 </resources>

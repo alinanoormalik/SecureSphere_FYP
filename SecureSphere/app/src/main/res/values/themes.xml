@@ -1,11 +1,21 @@
-<resources>
-    <style name="Theme.SecureSphere" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/purple_500</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Parent changed to Material3 to support your colorSurfaceVariant attributes -->
+    <style name="Theme.SecureSphere" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Brand colors -->
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
 
-        <item name="colorSurface">#FFFBFF</item>
-        <item name="colorSurfaceVariant">#E7E0EC</item>
+        <!-- UI Surface colors -->
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
 
-        <item name="colorOnSurface">#1C1B1F</item>
-        <item name="colorOnSurfaceVariant">#49454E</item>
+        <!-- Attributes used by your Breach Check results -->
+        <item name="colorSurfaceVariant">#F5F5F5</item>
+        <item name="colorOnSurfaceVariant">#757575</item>
+        <item name="colorOutline">#BDBDBD</item>
+        <item name="colorOutlineVariant">#E0E0E0</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 </resources>

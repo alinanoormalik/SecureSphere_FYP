@@ -11,10 +11,8 @@
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
 
     <application
         android:allowBackup="true"
@@ -28,50 +26,6 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-
-        <activity
-            android:name=".CallerIDActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="MalwareAnalysisActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".EmailActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="SpamCheckActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".PasswordManagerActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".DashboardActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".SignUpActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".BreachCheckActivity"
-            android:exported="true" />
-
-        <activity
-            android:name=".RiskyShareActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true" />
-
-        <activity
-            android:name=".HiddenImagesActivity"
-            android:exported="false" />
-
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -81,9 +35,18 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".TwoFactorActivity"
-            android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="true" />
+        <activity android:name=".CallerIDActivity" android:exported="false" />
+        <activity android:name=".MalwareAnalysisActivity" android:exported="false"/>
+        <activity android:name=".EmailActivity" android:exported="false" />
+        <activity android:name=".SpamCheckActivity" android:exported="false" />
+        <activity android:name=".PasswordManagerActivity" android:exported="false" />
+        <activity android:name=".DashboardActivity" android:exported="false" />
+        <activity android:name=".SignUpActivity" android:exported="false" />
+        <activity android:name=".BreachCheckActivity" android:exported="true" />
+        <activity android:name=".RiskyShareActivity" android:exported="false" />
+        <activity android:name=".HiddenImagesActivity" android:exported="false" />
+        <activity android:name=".TwoFactorActivity" android:exported="false" />
 
     </application>
 </manifest>

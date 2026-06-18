@@ -48,4 +48,13 @@
     <string name="hint_verification_code">6-Digit Secure Code</string>
     <string name="action_verify">VERIFY IDENTITY</string>
     <string name="error_invalid_code">Security token mismatch. Access Denied.</string>
+
+    <string name="user_name_default">User Name</string>
+    <string name="user_email_placeholder">user@example.com</string>
+    <string name="dark_engine_core">Dark Engine Core</string>
+    <string name="your_information">Your Information</string>
+    <string name="change_password">Change Password</string>
+    <string name="about_securesphere">About SecureSphere</string>
+    <string name="transmit_feedback">Transmit Feedback</string>
+    <string name="log_out">Log Out</string>
 </resources>
