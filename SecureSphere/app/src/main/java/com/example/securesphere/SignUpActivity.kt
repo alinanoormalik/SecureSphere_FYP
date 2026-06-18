@@ -8,11 +8,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserProfileChangeRequest
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
+    private val client = OkHttpClient() // Added for Python API communication
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,33 +45,48 @@ class SignUpActivity : AppCompatActivity() {
 
             btnSignUp.isEnabled = false
 
-            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = mAuth.currentUser
+            // --- NEW 2FA LOGIC STARTS HERE ---
+            // We call Python first to send the OTP.
+            // We DO NOT create the Firebase user yet.
 
-                    // Bind the real custom display name inside the authentication channel
-                    val profileUpdates = UserProfileChangeRequest.Builder()
-                        .setDisplayName(name)
-                        .build()
+            val json = JSONObject()
+            json.put("email", email)
 
-                    user?.updateProfile(profileUpdates)?.addOnCompleteListener { profileTask ->
-                        if (profileTask.isSuccessful) {
-                            Toast.makeText(this, "Security profile updated. Initiating 2FA verification...", Toast.LENGTH_SHORT).show()
+            val body = json.toString().toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("https://nimra3238.pythonanywhere.com/send-otp") // REPLACE WITH YOUR URL
+                .post(body)
+                .build()
 
-                            // Handshake over verification checkpoint routing explicitly
-                            val intent = Intent(this, TwoFactorActivity::class.java)
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    runOnUiThread {
+                        btnSignUp.isEnabled = true
+                        Toast.makeText(this@SignUpActivity, "Server Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (response.isSuccessful) {
+                        runOnUiThread {
+                            Toast.makeText(this@SignUpActivity, "OTP Sent to $email", Toast.LENGTH_SHORT).show()
+
+                            // Move to 2FA screen and pass the user info forward
+                            val intent = Intent(this@SignUpActivity, TwoFactorActivity::class.java)
+                            intent.putExtra("NAME", name)
+                            intent.putExtra("EMAIL", email)
+                            intent.putExtra("PASSWORD", password)
                             startActivity(intent)
-                            finish()
-                        } else {
+                        }
+                    } else {
+                        runOnUiThread {
                             btnSignUp.isEnabled = true
-                            Toast.makeText(this, "Profile sync issues: ${profileTask.exception?.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@SignUpActivity, "Error: " + response.body?.string(), Toast.LENGTH_LONG).show()
                         }
                     }
-                } else {
-                    btnSignUp.isEnabled = true
-                    Toast.makeText(this, "Registration Roadblock: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
-            }
+            })
+            // --- NEW 2FA LOGIC ENDS HERE ---
         }
     }
 }
