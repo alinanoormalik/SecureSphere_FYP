@@ -5,16 +5,16 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.preference.PreferenceManager
 import android.provider.Settings
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -41,12 +41,12 @@ class RiskyShareActivity : AppCompatActivity() {
     private lateinit var map: MapView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private lateinit var sharedPreferences: SharedPreferences
 
     private val dbRef = FirebaseDatabase.getInstance().getReference("live_locations")
     private val currentUserId = "fyp_test_user"
-    private val backendUrl = "http://10.0.2.2:5000/api/save-zone" // 10.0.2.2 maps directly to your laptop's localhost inside an Android Emulator
+    private val backendUrl = "http://10.0.2.2:5000/api/save-zone"
 
-    // Uses the CustomRiskyZone data class defined globally in LocationDbHelper.kt
     private val userDefinedZones = mutableListOf<CustomRiskyZone>()
     private var userLocationMarker: Marker? = null
     private var isSharingEnabled = false
@@ -57,12 +57,12 @@ class RiskyShareActivity : AppCompatActivity() {
 
         val ctx = applicationContext
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
+        sharedPreferences = getSharedPreferences("SecureSpherePrefs", Context.MODE_PRIVATE)
 
         setContentView(R.layout.activity_risky_share)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         map = findViewById(R.id.mapView)
-
         map.setMultiTouchControls(true)
         map.controller.setZoom(17.5)
 
@@ -77,14 +77,18 @@ class RiskyShareActivity : AppCompatActivity() {
             }
         }
 
+        // BUTTON TO MANUALLY SET/CHANGE EMERGENCY CONTACT
+        val btnSetContact = findViewById<Button>(R.id.btnSetEmergencyContact)
+        btnSetContact.setOnClickListener {
+            showSetContactDialog()
+        }
+
         checkLocationHardwareAndPermissions()
     }
 
     private fun setupMapInteractions() {
         val mReceive = object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean = false
-
-            // LONG PRESS ON MAP CRITERIA
             override fun longPressHelper(p: GeoPoint?): Boolean {
                 p?.let { showCreateZoneDialog(it) }
                 return true
@@ -93,51 +97,66 @@ class RiskyShareActivity : AppCompatActivity() {
         map.overlays.add(MapEventsOverlay(mReceive))
     }
 
+    // DIALOG TO SAVE USER'S EMERGENCY CONTACT NUMBER
+    private fun showSetContactDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Set Emergency Contact")
+        builder.setMessage("Enter the WhatsApp number (with country code, e.g., 923001234567)")
+
+        val input = EditText(this)
+        input.inputType = android.text.InputType.TYPE_CLASS_PHONE
+        val savedNumber = sharedPreferences.getString("emergency_no", "")
+        input.setText(savedNumber)
+
+        builder.setView(input)
+
+        builder.setPositiveButton("Save") { _, _ ->
+            val number = input.text.toString().trim().replace("+", "").replace(" ", "")
+            if (number.isNotEmpty()) {
+                sharedPreferences.edit().putString("emergency_no", number).apply()
+                Toast.makeText(this, "Emergency contact saved!", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
     private fun showCreateZoneDialog(geoPoint: GeoPoint) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Flag Dangerous Zone Globally")
-
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
-
-        val inputName = EditText(this).apply { hint = "Zone Name (e.g., Unlit Area)" }
+        val inputName = EditText(this).apply { hint = "Zone Name" }
         layout.addView(inputName)
-
         val inputRadius = EditText(this).apply {
-            hint = "Danger Radius in meters (e.g., 100)"
+            hint = "Danger Radius (meters)"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
         layout.addView(inputRadius)
-
         builder.setView(layout)
-
-        builder.setPositiveButton("Save and Secure Area") { dialog, _ ->
+        builder.setPositiveButton("Save") { _, _ ->
             val name = inputName.text.toString().trim()
             val radiusStr = inputRadius.text.toString().trim()
-
             if (name.isNotEmpty() && radiusStr.isNotEmpty()) {
                 val radius = radiusStr.toFloat()
                 plotZoneOnMap(name, geoPoint, radius)
                 sendZoneToBackendAPI(name, geoPoint.latitude, geoPoint.longitude, radius)
             }
-            dialog.dismiss()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        builder.setNegativeButton("Cancel", null)
         builder.show()
     }
 
     private fun plotZoneOnMap(name: String, geoPoint: GeoPoint, radius: Float) {
         userDefinedZones.add(CustomRiskyZone(name, geoPoint, radius))
-
         val marker = Marker(map).apply {
             position = geoPoint
             title = name
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
         map.overlays.add(marker)
-
         val circle = Polygon().apply {
             points = Polygon.pointsAsCircle(geoPoint, radius.toDouble())
             fillColor = Color.argb(60, 244, 67, 54)
@@ -146,7 +165,6 @@ class RiskyShareActivity : AppCompatActivity() {
         }
         map.overlays.add(circle)
         map.invalidate()
-        Toast.makeText(this, "Dangerous zone deployed on map surface!", Toast.LENGTH_SHORT).show()
     }
 
     private fun sendZoneToBackendAPI(name: String, lat: Double, lon: Double, radius: Float) {
@@ -157,52 +175,30 @@ class RiskyShareActivity : AppCompatActivity() {
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.doOutput = true
-
                 val jsonPayload = JSONObject().apply {
-                    put("user_id", currentUserId)
-                    put("zone_name", name)
-                    put("latitude", lat)
-                    put("longitude", lon)
-                    put("radius_meters", radius)
+                    put("user_id", currentUserId); put("zone_name", name)
+                    put("latitude", lat); put("longitude", lon); put("radius_meters", radius)
                 }
-
-                OutputStreamWriter(conn.outputStream).use { os ->
-                    os.write(jsonPayload.toString())
-                    os.flush()
-                }
-                conn.responseCode
-                conn.disconnect()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+                OutputStreamWriter(conn.outputStream).use { it.write(jsonPayload.toString()); it.flush() }
+                conn.responseCode; conn.disconnect()
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
     private fun checkLocationHardwareAndPermissions() {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-
-        if (!isGpsEnabled) {
-            AlertDialog.Builder(this)
-                .setTitle("GPS Hardware Required")
-                .setMessage("Please turn on your system location services/GPS hardware to lock onto your coordinates.")
-                .setPositiveButton("Turn On GPS") { _, _ ->
-                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                }
-                .setNegativeButton("Cancel", null)
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            AlertDialog.Builder(this).setTitle("GPS Required").setMessage("Please turn on GPS.")
+                .setPositiveButton("Settings") { _, _ -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
                 .show()
             return
         }
-
         val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
         if (permissions.any { ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }) {
             ActivityCompat.requestPermissions(this, permissions, 400)
-        } else {
-            getExactInitialLocationFix()
-        }
+        } else { getExactInitialLocationFix() }
     }
 
-    // THE CORE LOCATION FIX ENGINE
     @SuppressLint("MissingPermission")
     private fun getExactInitialLocationFix() {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
@@ -212,18 +208,15 @@ class RiskyShareActivity : AppCompatActivity() {
                 updateLocationMarkerOnMap(currentGeoPoint)
                 startSecurityMonitoringEngine()
             } else {
-                // FORCE ENGINE FALLBACK: Solves the empty location cache issue immediately
-                val activeRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
-                    .setMaxUpdates(1)
-                    .build()
-
+                val activeRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).setMaxUpdates(1).build()
                 fusedLocationClient.requestLocationUpdates(activeRequest, object : LocationCallback() {
-                    override fun onLocationResult(locationResult: LocationResult) {
-                        val freshLocation = locationResult.lastLocation ?: return
-                        val freshGeoPoint = GeoPoint(freshLocation.latitude, freshLocation.longitude)
-                        map.controller.setCenter(freshGeoPoint)
-                        updateLocationMarkerOnMap(freshGeoPoint)
-                        startSecurityMonitoringEngine()
+                    override fun onLocationResult(lr: LocationResult) {
+                        lr.lastLocation?.let {
+                            val gp = GeoPoint(it.latitude, it.longitude)
+                            map.controller.setCenter(gp)
+                            updateLocationMarkerOnMap(gp)
+                            startSecurityMonitoringEngine()
+                        }
                     }
                 }, mainLooper)
             }
@@ -232,25 +225,15 @@ class RiskyShareActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun startSecurityMonitoringEngine() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000)
-            .setMinUpdateIntervalMillis(1000)
-            .build()
-
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000).build()
         locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                val currentGpsData = locationResult.lastLocation ?: return
-                val currentGeoPoint = GeoPoint(currentGpsData.latitude, currentGpsData.longitude)
-
-                updateLocationMarkerOnMap(currentGeoPoint)
-                checkRiskyProximityLocally(currentGpsData)
-
+            override fun onLocationResult(lr: LocationResult) {
+                val gps = lr.lastLocation ?: return
+                val gp = GeoPoint(gps.latitude, gps.longitude)
+                updateLocationMarkerOnMap(gp)
+                checkRiskyProximityLocally(gps)
                 if (isSharingEnabled) {
-                    val payload = mapOf(
-                        "latitude" to currentGpsData.latitude,
-                        "longitude" to currentGpsData.longitude,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    dbRef.child(currentUserId).setValue(payload)
+                    dbRef.child(currentUserId).setValue(mapOf("latitude" to gps.latitude, "longitude" to gps.longitude, "timestamp" to System.currentTimeMillis()))
                 }
             }
         }
@@ -259,28 +242,17 @@ class RiskyShareActivity : AppCompatActivity() {
 
     private fun updateLocationMarkerOnMap(geoPoint: GeoPoint) {
         if (userLocationMarker == null) {
-            userLocationMarker = Marker(map).apply {
-                position = geoPoint
-                title = "Your Position"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-            }
+            userLocationMarker = Marker(map).apply { position = geoPoint; title = "Your Position" }
             map.overlays.add(userLocationMarker)
-        } else {
-            userLocationMarker?.position = geoPoint
-        }
+        } else { userLocationMarker?.position = geoPoint }
         map.invalidate()
     }
 
     private fun checkRiskyProximityLocally(userLocation: Location) {
         for (zone in userDefinedZones) {
-            val computationResult = FloatArray(1)
-            Location.distanceBetween(
-                userLocation.latitude, userLocation.longitude,
-                zone.geoPoint.latitude, zone.geoPoint.longitude,
-                computationResult
-            )
-
-            if (computationResult[0] <= zone.radiusMeters) {
+            val res = FloatArray(1)
+            Location.distanceBetween(userLocation.latitude, userLocation.longitude, zone.geoPoint.latitude, zone.geoPoint.longitude, res)
+            if (res[0] <= zone.radiusMeters) {
                 if (!isEmergencyFired) {
                     isEmergencyFired = true
                     triggerEmergencyProtocol(zone.name)
@@ -291,31 +263,49 @@ class RiskyShareActivity : AppCompatActivity() {
         isEmergencyFired = false
     }
 
-    // THE EMERGENCY PROTOCOLS AND CONTACT PHONE DIALER
+    // UPDATED EMERGENCY PROTOCOL WITH WHATSAPP OPTION
     private fun triggerEmergencyProtocol(zoneTitle: String) {
+        val lastPos = userLocationMarker?.position
+
         AlertDialog.Builder(this)
-            .setTitle("🚨 WARNING: RISKY AREA DETECTED")
-            .setMessage("You have entered a restricted threat perimeter: '$zoneTitle'. Would you like to call your emergency contact instantly?")
+            .setTitle("🚨 WARNING: RISKY AREA")
+            .setMessage("Entered: '$zoneTitle'. Choose emergency action:")
             .setCancelable(false)
-            .setPositiveButton("CALL NOW") { _, _ ->
-                val emergencyNumber = "15"
-                val callIntent = Intent(Intent.ACTION_DIAL).apply {
-                    data = Uri.parse("tel:$emergencyNumber")
+            .setPositiveButton("CALL 15") { _, _ ->
+                startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:15") })
+            }
+            .setNeutralButton("WHATSAPP ALERT") { _, _ ->
+                if (lastPos != null) {
+                    sendWhatsAppAlert(zoneTitle, lastPos.latitude, lastPos.longitude)
                 }
-                startActivity(callIntent)
             }
             .setNegativeButton("DISMISS", null)
             .show()
     }
 
+    private fun sendWhatsAppAlert(zoneName: String, lat: Double, lon: Double) {
+        val number = sharedPreferences.getString("emergency_no", "")
+
+        if (number.isNullOrEmpty()) {
+            Toast.makeText(this, "Please set an emergency contact first!", Toast.LENGTH_LONG).show()
+            showSetContactDialog()
+            return
+        }
+
+        val mapLink = "https://www.google.com/maps/search/?api=1&query=$lat,$lon"
+        val message = "🚨 EMERGENCY: I've entered a risky area: $zoneName. My location: $mapLink"
+
+        try {
+            val url = "https://api.whatsapp.com/send?phone=$number&text=${Uri.encode(message)}"
+            startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse(url) })
+        } catch (e: Exception) {
+            Toast.makeText(this, "WhatsApp not found", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, gr: IntArray) {
         super.onRequestPermissionsResult(rc, p, gr)
-        if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) {
-            getExactInitialLocationFix()
-        } else {
-            Toast.makeText(this, "Location permission rejected.", Toast.LENGTH_SHORT).show()
-            finish()
-        }
+        if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) getExactInitialLocationFix()
     }
 
     override fun onResume() { super.onResume(); map.onResume() }
