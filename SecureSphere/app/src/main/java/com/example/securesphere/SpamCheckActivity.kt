@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.example.securesphere.R
 import com.google.gson.annotations.SerializedName
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
@@ -13,6 +12,7 @@ import retrofit2.http.POST
 
 class SpamCheckActivity : AppCompatActivity() {
 
+    // FIX 1: Base URL must end with / and not include the endpoint
     private val BASE_URL = "https://nimra3238.pythonanywhere.com/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,14 +26,16 @@ class SpamCheckActivity : AppCompatActivity() {
         btnScan.setOnClickListener {
             val url = etUrl.text.toString().trim()
             if (url.isNotEmpty()) {
-                tvResult.text = "Checking..."
+                tvResult.text = "Scanning in Real-Time..."
+                tvResult.setTextColor(Color.GRAY)
                 checkUrl(url, tvResult)
+            } else {
+                Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun checkUrl(urlToCheck: String, tvResult: TextView) {
-
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -43,51 +45,52 @@ class SpamCheckActivity : AppCompatActivity() {
 
         api.scan(ScanRequest(urlToCheck))
             .enqueue(object : Callback<ScanResponse> {
+                override fun onResponse(call: Call<ScanResponse>, response: Response<ScanResponse>) {
+                    if (response.isSuccessful) {
+                        val result = response.body()
 
-                override fun onResponse(
-                    call: Call<ScanResponse>,
-                    response: Response<ScanResponse>
-                ) {
-                    val result = response.body()
-
-                    if (result == null) {
-                        tvResult.text = "Invalid response"
-                        return
-                    }
-
-                    when (result.verdict) {
-                        "SAFE" -> {
-                            tvResult.text = "✅ SAFE\nRisk: ${result.riskScore}%"
-                            tvResult.setTextColor(Color.GREEN)
+                        // FIX 2: Check if result or the expected field is null
+                        if (result?.resultText == null) {
+                            tvResult.text = "Server Error: Missing keys"
+                            return
                         }
-                        "WARNING" -> {
-                            tvResult.text = "⚠️ WARNING\nRisk: ${result.riskScore}%"
+
+                        // FIX 3: Match the exact labels sent from Python AI
+                        val responseLabel = result.resultText
+                        tvResult.text = responseLabel
+
+                        if (responseLabel.contains("SAFE")) {
+                            tvResult.setTextColor(Color.GREEN)
+                        } else if (responseLabel.contains("SPAM") || responseLabel.contains("DETECTED")) {
+                            tvResult.setTextColor(Color.RED)
+                        } else {
                             tvResult.setTextColor(Color.YELLOW)
                         }
-                        "DANGER" -> {
-                            tvResult.text = "❌ DANGER\nRisk: ${result.riskScore}%"
-                            tvResult.setTextColor(Color.RED)
-                        }
+
+                    } else {
+                        tvResult.text = "Error: ${response.code()}"
                     }
                 }
 
                 override fun onFailure(call: Call<ScanResponse>, t: Throwable) {
-                    tvResult.text = "Error: ${t.message}"
+                    tvResult.text = "Network Error: ${t.message}"
                 }
             })
     }
 }
 
+// FIX 4: Data classes must match the Backend JSON keys
 data class ScanRequest(
     @SerializedName("url") val url: String
 )
 
 data class ScanResponse(
-    @SerializedName("verdict") val verdict: String,
-    @SerializedName("risk_score") val riskScore: Int
+    @SerializedName("status") val status: String,
+    @SerializedName("result") val resultText: String  // This matches 'result' from Python
 )
 
 interface ApiService {
+    // FIX 5: Endpoint is defined here
     @POST("scan")
     fun scan(@Body request: ScanRequest): Call<ScanResponse>
 }
