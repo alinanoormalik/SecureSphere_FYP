@@ -18,7 +18,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Emergency Live Location"
+            android:text="Risky Area"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -31,6 +31,12 @@
             android:textOff="LIVE OFF"
             android:backgroundTint="?attr/colorPrimary"
             android:textColor="?attr/colorOnPrimary" />
+
+        <Button
+            android:id="@+id/btnSetEmergencyContact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Emergency Contact" />
     </LinearLayout>
 
     <org.osmdroid.views.MapView
