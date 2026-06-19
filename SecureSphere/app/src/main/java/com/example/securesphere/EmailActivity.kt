@@ -62,28 +62,38 @@ class EmailActivity : AppCompatActivity() {
                     runOnUiThread {
                         try {
                             val jsonResponse = JSONObject(responseData ?: "")
-                            val status = jsonResponse.getString("status")
+                            val status = jsonResponse.optString("status", "ERROR")
 
                             if (status != "SUCCESS") {
-                                tvResult.text = "Invalid server response"
+                                tvResult.text =
+                                    "Server Error: ${jsonResponse.optString("result", "Unknown")}"
                                 tvResult.setTextColor(Color.RED)
                                 return@runOnUiThread
                             }
 
-                            val label = jsonResponse.getString("classification")
-                            val confidence = jsonResponse.getDouble("confidence") * 100
+                            // optString doesn't crash if the key is missing
+                            val label = jsonResponse.optString("classification", "UNKNOWN")
+                            val confidence = jsonResponse.optDouble("confidence", 0.0)
 
                             when (label) {
                                 "SPAM" -> {
-                                    tvResult.text =
-                                        "🚨 Fraudulent Email Detected\nConfidence: ${"%.1f".format(confidence)}%"
+                                    tvResult.text = "🚨 Fraudulent Email Detected\nConfidence: ${
+                                        "%.1f".format(confidence)
+                                    }%"
                                     tvResult.setTextColor(Color.RED)
                                 }
+
                                 "SUSPICIOUS" -> {
                                     tvResult.text =
-                                        "⚠️ Suspicious Email\nManual review recommended\nConfidence: ${"%.1f".format(confidence)}%"
-                                    tvResult.setTextColor(Color.parseColor("#FFA500")) // Orange
+                                        "⚠️ Suspicious Email\nConfidence: ${"%.1f".format(confidence)}%"
+                                    tvResult.setTextColor(Color.parseColor("#FFA500"))
                                 }
+
+                                "SHORT" -> {
+                                    tvResult.text = "Input too short"
+                                    tvResult.setTextColor(Color.YELLOW)
+                                }
+
                                 else -> {
                                     tvResult.text =
                                         "✅ Legitimate Email\nConfidence: ${"%.1f".format(confidence)}%"
@@ -92,7 +102,8 @@ class EmailActivity : AppCompatActivity() {
                             }
 
                         } catch (e: Exception) {
-                            tvResult.text = "Parsing error"
+                            e.printStackTrace() // This helps you see the error in Logcat
+                            tvResult.text = "Parsing error: Content mismatch"
                             tvResult.setTextColor(Color.RED)
                         }
                     }

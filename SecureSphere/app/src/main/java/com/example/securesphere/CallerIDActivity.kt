@@ -1,6 +1,7 @@
 package com.example.securesphere
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -15,12 +16,11 @@ class CallerIDActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_caller_idactivity)
 
-        // 1. Setup Views (This defines tvResult so it won't be red!)
+        // Find views
         val etPhone = findViewById<EditText>(R.id.etPhoneInput)
-        val btnIdentify = findViewById<Button>(R.id.btnIdentify) // Make sure ID matches XML
-        val tvResult = findViewById<TextView>(R.id.tvCallerResult) // Make sure ID matches XML
+        val btnIdentify = findViewById<Button>(R.id.btnIdentify)
+        val tvResult = findViewById<TextView>(R.id.tvCallerResult)
 
-        // 2. Button Action
         btnIdentify.setOnClickListener {
             val phoneNumber = etPhone.text.toString().trim()
 
@@ -29,74 +29,60 @@ class CallerIDActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            tvResult.text = "🔍 Checking Database..."
+            // Show status
+            tvResult.visibility = View.VISIBLE
+            tvResult.text = "🔍 Analyzing caller data..."
 
-            // 3. Start Background Thread for API
+            // API Call in Background
             Thread {
                 try {
                     val client = OkHttpClient()
-
-                    // ✅ YOUR API KEY IS HERE (Fixed URL)
                     val url = "https://api.veriphone.io/v2/verify?phone=$phoneNumber&key=2F115CB9DDD94FF5AE4BD6E4AD7B2490"
 
-                    val request = Request.Builder()
-                        .url(url)
-                        .build()
-
+                    val request = Request.Builder().url(url).build()
                     val response = client.newCall(request).execute()
-                    val result = response.body?.string()
+                    val responseData = response.body?.string()
 
-                    // 4. Update UI with the result
                     runOnUiThread {
-                        if (result != null) {
+                        if (responseData != null) {
                             try {
-                                // Parse the JSON
-                                val json = JSONObject(result)
+                                val json = JSONObject(responseData)
 
-                                // Extract details safely
                                 val phone = json.optString("phone", phoneNumber)
-                                val carrier = json.optString("carrier", "Unknown Carrier")
-                                val country = json.optString("country", "Unknown Country")
-                                val region = json.optString("phone_region", "Unknown Region")
+                                val carrier = json.optString("carrier", "Unknown")
+                                val country = json.optString("country", "Unknown")
+                                val region = json.optString("phone_region", "Unknown")
                                 val type = json.optString("phone_type", "Unknown")
                                 val isValid = json.optBoolean("phone_valid", false)
 
-                                // Risk Logic
-                                var riskLevel = "✅ Safe"
-                                if (type.equals("voip", ignoreCase = true)) {
-                                    riskLevel = "⚠️ High Risk (VOIP)"
-                                } else if (!isValid) {
-                                    riskLevel = "❌ Invalid Number"
+                                var riskStatus = "SAFE"
+                                if (type.equals("voip", ignoreCase = true) || !isValid) {
+                                    riskStatus = "FRAUD RISK"
                                 }
 
-                                // Nice Formatting
-                                val formattedText = """
-                                    📞 CALLER ANALYSIS
-                                    ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-                                    
-                                    📱 Number:   $phone
-                                    🌍 Country:  $country
-                                    📍 Region:   $region
-                                    🏢 Carrier:  $carrier
-                                    📡 Type:     ${type.uppercase()}
-                                    
-                                    🛡️ SECURITY STATUS:
-                                    $riskLevel
-                                """.trimIndent()
+                                // Format output (Theme will handle text color automatically)
+                                val report = "CALLER ANALYSIS REPORT\n" +
+                                        "------------------------------------------\n" +
+                                        "Number   :  $phone\n" +
+                                        "Country  :  $country\n" +
+                                        "Region   :  $region\n" +
+                                        "Carrier  :  $carrier\n" +
+                                        "Type     :  ${type.uppercase()}\n" +
+                                        "------------------------------------------\n" +
+                                        "STATUS   :  $riskStatus"
 
-                                tvResult.text = formattedText
+                                tvResult.text = report
 
                             } catch (e: Exception) {
-                                tvResult.text = "Error parsing: ${e.message}"
+                                tvResult.text = "Error parsing response"
                             }
                         } else {
                             tvResult.text = "No response from server"
                         }
                     }
-
                 } catch (e: Exception) {
                     runOnUiThread {
-                        tvResult.text = "Connection Error: ${e.message}"
+                        tvResult.text = "Connection Error: Check Internet"
                     }
                 }
             }.start()
