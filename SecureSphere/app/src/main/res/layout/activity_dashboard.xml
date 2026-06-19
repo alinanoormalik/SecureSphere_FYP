@@ -87,6 +87,7 @@
 
                     app:cardBackgroundColor="@android:color/transparent">
 
+
                     <LinearLayout
 
                         android:layout_width="match_parent"
@@ -143,7 +144,7 @@
 
                         android:padding="16dp">
 
-                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/sym_action_email" app:tint="#BB86FC" android:contentDescription="@string/desc_email_spam_icon"/>
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/sym_action_email" app:tint="#BB86FC" android:contentDescription="Email Spam Icon"/>
 
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/title_email_spam" android:textSize="14sp" android:textStyle="bold" android:layout_marginTop="12dp" android:gravity="center" android:textColor="#FFFFFF"/>
 

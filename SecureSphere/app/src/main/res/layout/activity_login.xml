@@ -22,8 +22,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:hintTextColor="@color/purple_500"
-        app:boxStrokeColor="@color/purple_500">
+        app:hintTextColor="@color/purple_200"
+        app:boxStrokeColor="@color/purple_200">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLoginEmail"
             android:layout_width="match_parent"
@@ -38,8 +38,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        app:hintTextColor="@color/purple_500"
-        app:boxStrokeColor="@color/purple_500">
+        app:hintTextColor="@color/purple_200"
+        app:boxStrokeColor="@color/purple_200">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLoginPassword"
             android:layout_width="match_parent"
@@ -53,7 +53,7 @@
         android:id="@+id/cbRememberMe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remember me (Skip 2FA)"
+        android:text="Remember me"
         android:textColor="@color/black"
         android:layout_gravity="start"
         android:layout_marginBottom="16dp"/>
@@ -64,7 +64,7 @@
         android:layout_height="60dp"
         android:text="Login"
         style="@style/Widget.MaterialComponents.Button"
-        android:backgroundTint="@color/purple_500"
+        android:backgroundTint="@color/purple_200"
         android:textColor="@color/white" />
 
     <TextView
@@ -72,7 +72,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New here? Create an account"
-        android:textColor="@color/purple_500"
+        android:textColor="@color/purple_200"
         android:layout_marginTop="20dp"
         android:clickable="true"
         android:focusable="true"
