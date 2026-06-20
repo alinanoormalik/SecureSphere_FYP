@@ -196,7 +196,29 @@ class RiskyShareActivity : AppCompatActivity() {
         val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
         if (permissions.any { ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }) {
             ActivityCompat.requestPermissions(this, permissions, 400)
-        } else { getExactInitialLocationFix() }
+        } else {
+            showHowToUseManual()
+        }
+    }
+
+    // NEW PIECE OF CODE: DISPLAYS A 3-STEP USER MANUAL
+    private fun showHowToUseManual() {
+        val manualMessage = """
+            1. SET EMERGENCY CONTACT: Click the 'Set Emergency Contact' button at the top to save your trusted WhatsApp number.
+            
+            2. FLAG RISKY ZONES: Long-press anywhere on the map to define your dangerous/risky area.
+            
+            3. ACTIVATE LIVE MONITORING: Flip the 'LIVE OFF' switch to 'LIVE ON' to stream your location. If you cross into any flagged danger zone, an automatic SOS alert system triggers instantly.
+        """.trimIndent()
+
+        AlertDialog.Builder(this)
+            .setTitle("📖 Quick Setup Guide")
+            .setMessage(manualMessage)
+            .setCancelable(false)
+            .setPositiveButton("Got It!") { _, _ ->
+                getExactInitialLocationFix()
+            }
+            .show()
     }
 
     @SuppressLint("MissingPermission")
@@ -305,7 +327,9 @@ class RiskyShareActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, gr: IntArray) {
         super.onRequestPermissionsResult(rc, p, gr)
-        if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) getExactInitialLocationFix()
+        if (rc == 400 && gr.isNotEmpty() && gr[0] == PackageManager.PERMISSION_GRANTED) {
+            showHowToUseManual()
+        }
     }
 
     override fun onResume() { super.onResume(); map.onResume() }
