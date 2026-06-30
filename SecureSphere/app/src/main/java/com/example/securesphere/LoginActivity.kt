@@ -17,14 +17,12 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // PROFESSIONAL AUTO-LOGIN: Check if a Firebase session already exists
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             val sharedPref = getSharedPreferences("SecureSpherePrefs", Context.MODE_PRIVATE)
             val skip2FA = sharedPref.getBoolean("Skip2FA_${currentUser.uid}", false)
 
             if (skip2FA) {
-                // If "Remember Me" was previously selected, skip everything and go to Dashboard
                 startActivity(Intent(this, DashboardActivity::class.java))
                 finish()
             }
@@ -62,7 +60,6 @@ class LoginActivity : AppCompatActivity() {
                     val userId = mAuth.currentUser?.uid
                     val rememberMeChecked = cbRememberMe.isChecked
 
-                    // Save the "Remember Me" preference for this specific user
                     sharedPref.edit().putBoolean("Skip2FA_$userId", rememberMeChecked).apply()
 
                     if (rememberMeChecked) {
@@ -70,7 +67,6 @@ class LoginActivity : AppCompatActivity() {
                         startActivity(Intent(this, DashboardActivity::class.java))
                         finish()
                     } else {
-                        // User did not check "Remember Me", route to 2FA verification
                         startActivity(Intent(this, TwoFactorActivity::class.java))
                         finish()
                     }

@@ -1,14 +1,16 @@
 package com.example.securesphere
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.GridView
-import android.widget.Toast
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
@@ -28,19 +30,15 @@ class HiddenImagesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hidden_images)
 
-        // Set up our secure hidden folder inside internal storage path
         vaultFolder = File(filesDir, "secure_vault_images")
-        if (!vaultFolder.exists()) {
-            vaultFolder.mkdirs()
-        }
+        if (!vaultFolder.exists()) vaultFolder.mkdirs()
 
         val btnImport = findViewById<Button>(R.id.btnImportImage)
         gridView = findViewById<GridView>(R.id.gridViewImages)
 
-        // START BIOMETRIC CHECK IMMEDIATELY JUST LIKE THE PASSWORD MANAGER
+        // Trigger Biometric Check
         checkBiometricAuth()
 
-        // Gallery Import Trigger
         btnImport.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
@@ -50,43 +48,30 @@ class HiddenImagesActivity : AppCompatActivity() {
 
     private fun checkBiometricAuth() {
         val executor: Executor = ContextCompat.getMainExecutor(this)
-
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
-                    Toast.makeText(applicationContext, "Vault Unlocked", Toast.LENGTH_SHORT).show()
-                    loadHiddenImages() // Load hidden files only after verification passes
+                    loadHiddenImages()
                 }
-
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    Toast.makeText(applicationContext, "Access Denied: $errString", Toast.LENGTH_SHORT).show()
-                    finish() // Close the screen immediately if auth fails
-                }
-
-                override fun onAuthenticationFailed() {
-                    super.onAuthenticationFailed()
-                    Toast.makeText(applicationContext, "Identity verification failed", Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             })
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Encrypted Media Vault")
-            .setSubtitle("Authenticate fingerprint to view hidden folder files")
-            .setNegativeButtonText("Exit")
+            .setSubtitle("Use biometric or device PIN to access")
+            .setDeviceCredentialAllowed(true)
             .build()
 
         biometricPrompt.authenticate(promptInfo)
     }
 
-    // Capture image selected from phone public storage gallery and copy to private zone
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val imageUri: Uri? = result.data?.data
-            if (imageUri != null) {
-                saveImageToSecureSandbox(imageUri)
-            }
+            result.data?.data?.let { saveImageToSecureSandbox(it) }
         }
     }
 
@@ -94,58 +79,91 @@ class HiddenImagesActivity : AppCompatActivity() {
         try {
             val inputStream: InputStream? = contentResolver.openInputStream(uri)
             if (inputStream != null) {
-                // Generate unique secure file identity name
-                val uniqueFileName = "IMG_${UUID.randomUUID()}.jpg"
-                val destinationFile = File(vaultFolder, uniqueFileName)
+                // METADATA OBFUSCATION: Generating a random UUID string
+                val secureID = UUID.randomUUID().toString()
+                val fileName = "SECURE_$secureID.enc"
+                val destinationFile = File(vaultFolder, fileName)
 
-                // Pipe data into application local space
                 val outputStream = FileOutputStream(destinationFile)
-                inputStream.use { input ->
-                    outputStream.use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                Toast.makeText(this, "File hidden securely!", Toast.LENGTH_SHORT).show()
-                loadHiddenImages() // Refresh the preview view grid
+                inputStream.use { input -> outputStream.use { output -> input.copyTo(output) } }
+
+                Toast.makeText(this, "Image Obfuscated & Hidden!", Toast.LENGTH_SHORT).show()
+                loadHiddenImages()
             }
         } catch (e: Exception) {
-            Toast.makeText(this, "Error processing security write: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun loadHiddenImages() {
-        // Fetch all files sitting isolated inside our local sandbox directory path
         val imageFiles = vaultFolder.listFiles()?.toList() ?: emptyList()
+        val bitmaps = mutableListOf<Pair<Bitmap, String>>() // Store both bitmap and its name
 
-        // Convert file references to usable Bitmaps
-        val bitmaps = mutableListOf<Bitmap>()
         for (file in imageFiles) {
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            if (bitmap != null) {
-                bitmaps.add(bitmap)
-            }
+            bitmap?.let { bitmaps.add(it to file.name) }
         }
 
-        // Custom simple inline UI mapping adapter to fit images inside grid spaces smoothly
-        val customAdapter = object : android.widget.BaseAdapter() {
+        gridView.adapter = object : BaseAdapter() {
             override fun getCount(): Int = bitmaps.size
-            override fun getItem(position: Int): Any = bitmaps[position]
-            override fun getItemId(position: Int): Long = position.toLong()
-            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup?): android.view.View {
-                val imageView = if (convertView == null) {
-                    android.widget.ImageView(this@HiddenImagesActivity).apply {
-                        layoutParams = android.view.ViewGroup.LayoutParams(250, 250)
-                        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
-                        setPadding(4, 4, 4, 4)
-                    }
-                } else {
-                    convertView as android.widget.ImageView
+            override fun getItem(position: Int) = bitmaps[position]
+            override fun getItemId(position: Int) = position.toLong()
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+                val imageView = (convertView as? ImageView) ?: ImageView(this@HiddenImagesActivity).apply {
+                    layoutParams = AbsListView.LayoutParams(300, 300)
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setPadding(8, 8, 8, 8)
                 }
-                imageView.setImageBitmap(bitmaps[position])
+                imageView.setImageBitmap(bitmaps[position].first)
                 return imageView
             }
         }
 
-        gridView.adapter = customAdapter
+        // --- THE FIX: CLICK TO PREVIEW & SHOW UUID ---
+        gridView.setOnItemClickListener { _, _, position, _ ->
+            val selectedItem = bitmaps[position]
+            showImagePreview(selectedItem.first, selectedItem.second)
+        }
+    }
+
+    // This is the logic from your screenshot, improved to work as a popup
+    private fun showImagePreview(bitmap: Bitmap, fileName: String) {
+        val dialog = Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(android.graphics.Color.BLACK)
+        }
+
+        // 1. The Obfuscated Name View (As seen in your screenshot)
+        val tvName = TextView(this).apply {
+            text = "System Name: $fileName"
+            textSize = 14f
+            setPadding(0, 40, 0, 20)
+            setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark))
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+        }
+
+        // 2. The Full Image
+        val ivFull = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0, 1.0f
+            )
+            setImageBitmap(bitmap)
+        }
+
+        // 3. Close button
+        val btnClose = Button(this).apply {
+            text = "Close Preview"
+            setOnClickListener { dialog.dismiss() }
+        }
+
+        layout.addView(tvName)
+        layout.addView(ivFull)
+        layout.addView(btnClose)
+
+        dialog.setContentView(layout)
+        dialog.show()
     }
 }

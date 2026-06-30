@@ -1,5 +1,6 @@
 package com.example.securesphere
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -16,24 +17,28 @@ class CallerIDActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_caller_idactivity)
 
-        // Find views
         val etPhone = findViewById<EditText>(R.id.etPhoneInput)
         val btnIdentify = findViewById<Button>(R.id.btnIdentify)
         val tvResult = findViewById<TextView>(R.id.tvCallerResult)
 
         btnIdentify.setOnClickListener {
-            val phoneNumber = etPhone.text.toString().trim()
+            var phoneNumber = etPhone.text.toString().trim()
 
             if (phoneNumber.isEmpty()) {
-                etPhone.error = "Enter a number first"
+                etPhone.error = "Please enter a number"
                 return@setOnClickListener
             }
 
-            // Show status
-            tvResult.visibility = View.VISIBLE
-            tvResult.text = "🔍 Analyzing caller data..."
+            if (phoneNumber.startsWith("0")) {
+                phoneNumber = "+92" + phoneNumber.substring(1)
+            } else if (!phoneNumber.startsWith("+")) {
+                phoneNumber = "+$phoneNumber"
+            }
 
-            // API Call in Background
+            tvResult.visibility = View.VISIBLE
+            tvResult.text = "🔍 Interrogating Global Telemetry..."
+            tvResult.setTextColor(tvResult.textColors.defaultColor)
+
             Thread {
                 try {
                     val client = OkHttpClient()
@@ -47,43 +52,72 @@ class CallerIDActivity : AppCompatActivity() {
                         if (responseData != null) {
                             try {
                                 val json = JSONObject(responseData)
-
-                                val phone = json.optString("phone", phoneNumber)
-                                val carrier = json.optString("carrier", "Unknown")
-                                val country = json.optString("country", "Unknown")
-                                val region = json.optString("phone_region", "Unknown")
-                                val type = json.optString("phone_type", "Unknown")
                                 val isValid = json.optBoolean("phone_valid", false)
+                                val type = json.optString("phone_type", "unknown").lowercase()
+                                val carrier = json.optString("carrier", "").lowercase()
+                                val country = json.optString("country", "Unknown")
 
-                                var riskStatus = "SAFE"
-                                if (type.equals("voip", ignoreCase = true) || !isValid) {
-                                    riskStatus = "FRAUD RISK"
+                                // --- LOGIC KEPT IN BACKGROUND FOR COLOR ACCURACY ---
+                                var totalPenalty = 0
+                                if (!isValid) {
+                                    totalPenalty = 100
+                                } else {
+                                    when (type) {
+                                        "voip" -> totalPenalty += 60
+                                        "premium_rate" -> totalPenalty += 50
+                                        "toll_free" -> totalPenalty += 40
+                                        "unknown" -> totalPenalty += 30
+                                    }
+                                    if (country != "Pakistan") {
+                                        totalPenalty += 25
+                                    }
+                                    val spamCarriers = listOf("twilio", "pinger", "textnow", "bandwidth", "nexmo", "plivo", "sinch", "vonage")
+                                    if (spamCarriers.any { carrier.contains(it) }) {
+                                        totalPenalty += 35
+                                    }
                                 }
 
-                                // Format output (Theme will handle text color automatically)
-                                val report = "CALLER ANALYSIS REPORT\n" +
-                                        "------------------------------------------\n" +
-                                        "Number   :  $phone\n" +
-                                        "Country  :  $country\n" +
-                                        "Region   :  $region\n" +
-                                        "Carrier  :  $carrier\n" +
-                                        "Type     :  ${type.uppercase()}\n" +
-                                        "------------------------------------------\n" +
-                                        "STATUS   :  $riskStatus"
+                                val finalRiskScore = Math.min(totalPenalty, 100)
+
+                                val statusColor: Int
+                                val statusLabel: String
+                                when {
+                                    finalRiskScore >= 70 -> {
+                                        statusLabel = "HIGH RISK / SCAM LIKELY"
+                                        statusColor = Color.parseColor("#FF5252") // Red
+                                    }
+                                    finalRiskScore >= 30 -> {
+                                        statusLabel = "SUSPICIOUS ACTIVITY"
+                                        statusColor = Color.parseColor("#FFB74D") // Orange
+                                    }
+                                    else -> {
+                                        statusLabel = "VERIFIED IDENTITY"
+                                        statusColor = Color.parseColor("#00E676") // Green
+                                    }
+                                }
+
+                                // --- CLEAN OUTPUT FORMAT (NO THREAT INDEX) ---
+                                val report = """
+                                    CALLER FORENSIC REPORT
+                                    ----------------------------------
+                                    TARGET    : $phoneNumber
+                                    COUNTRY   : $country
+                                    LINE TYPE : ${type.uppercase()}
+                                    CARRIER   : ${if(carrier.isEmpty()) "PRIVATE EXCHANGE" else carrier.uppercase()}
+                                    ----------------------------------
+                                    ANALYSIS     : $statusLabel
+                                """.trimIndent()
 
                                 tvResult.text = report
+                                tvResult.setTextColor(statusColor)
 
                             } catch (e: Exception) {
-                                tvResult.text = "Error parsing response"
+                                tvResult.text = "Analysis Error: Metadata Corrupt"
                             }
-                        } else {
-                            tvResult.text = "No response from server"
                         }
                     }
                 } catch (e: Exception) {
-                    runOnUiThread {
-                        tvResult.text = "Connection Error: Check Internet"
-                    }
+                    runOnUiThread { tvResult.text = "Connection Error: API Timeout" }
                 }
             }.start()
         }

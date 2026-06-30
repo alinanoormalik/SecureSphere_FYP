@@ -71,7 +71,16 @@
             android:text="Outdated / Legacy app access"
             android:textColor="?attr/colorOnSurface"
             android:buttonTint="?attr/colorPrimary"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="3dp"/>
+
+        <CheckBox
+            android:id="@+id/cbPhoneLinked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="My phone number is linked to my social accounts"
+            android:textColor="?attr/colorOnSurface"
+            android:buttonTint="?attr/colorPrimary"
+            android:layout_marginBottom="3dp" />
 
         <Button
             android:id="@+id/btnCheckBreach"

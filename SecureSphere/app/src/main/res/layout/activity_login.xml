@@ -33,13 +33,16 @@
             android:textColor="@color/black" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- FIXED: Added endIconMode for the eye toggle -->
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         app:hintTextColor="@color/purple_200"
-        app:boxStrokeColor="@color/purple_200">
+        app:boxStrokeColor="@color/purple_200"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/purple_200">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLoginPassword"
             android:layout_width="match_parent"

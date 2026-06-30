@@ -59,31 +59,30 @@ class PasswordManagerActivity : AppCompatActivity() {
         val biometricPrompt = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
 
-                // 1. SUCCESS: User verified, load the passwords
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
                     Toast.makeText(applicationContext, "Identity Verified", Toast.LENGTH_SHORT).show()
-                    loadPasswords() // Only load data here!
+                    loadPasswords()
                 }
 
-                // 2. ERROR: User canceled or No Fingerprint set
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
                     Toast.makeText(applicationContext, "Auth Error: $errString", Toast.LENGTH_SHORT).show()
-                    finish() // Close the screen if they fail!
+                    finish()
                 }
 
-                // 3. FAILED: Wrong Fingerprint
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
                     Toast.makeText(applicationContext, "Wrong Fingerprint", Toast.LENGTH_SHORT).show()
                 }
             })
 
+        // FIXED BUILDER TO PREVENT CRASH
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Secure Vault Access")
-            .setSubtitle("Scan fingerprint to view passwords")
-            .setNegativeButtonText("Cancel")
+            .setSubtitle("Use Fingerprint or Device PIN")
+            // This is the stable way to allow PIN fallback without crashing
+            .setDeviceCredentialAllowed(true)
             .build()
 
         biometricPrompt.authenticate(promptInfo)

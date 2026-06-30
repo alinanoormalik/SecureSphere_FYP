@@ -25,6 +25,7 @@ class BreachCheckActivity : AppCompatActivity() {
     private lateinit var cbLegacy: CheckBox
     private lateinit var resultContainer: LinearLayout
     private lateinit var tvRiskBadge: TextView
+    private lateinit var cbPhoneLinked: CheckBox
     private lateinit var dynamicBreachList: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +39,7 @@ class BreachCheckActivity : AppCompatActivity() {
         cb2FA = findViewById(R.id.cb2FA)
         cbReuse = findViewById(R.id.cbReuse)
         cbLegacy = findViewById(R.id.cbLegacy)
+        cbPhoneLinked = findViewById(R.id.cbPhoneLinked)
         resultContainer = findViewById(R.id.resultContainer)
         tvRiskBadge = findViewById(R.id.tvRiskBadge)
         dynamicBreachList = findViewById(R.id.dynamicBreachList)
@@ -62,9 +64,10 @@ class BreachCheckActivity : AppCompatActivity() {
     }
 
     private fun executeRiskAssessment(email: String) {
-        val is2FaChecked = cb2FA.isChecked
-        val isReuseChecked = cbReuse.isChecked
-        val isLegacyChecked = cbLegacy.isChecked
+        val q1 = cb2FA.isChecked
+        val q2 = cbReuse.isChecked
+        val q3 = cbLegacy.isChecked
+        val q4 = cbPhoneLinked.isChecked
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -80,9 +83,10 @@ class BreachCheckActivity : AppCompatActivity() {
                 val rootJson = JSONObject().apply {
                     put("email", email)
                     put("questionnaire", JSONObject().apply {
-                        put("is_2fa_disabled", is2FaChecked)
-                        put("is_password_reused", isReuseChecked)
-                        put("has_legacy_connected_apps", isLegacyChecked)
+                        put("is_2fa_disabled", q1)
+                        put("is_password_reused", q2)
+                        put("has_legacy_connected_apps", q3)
+                        put("is_phone_linked", q4)
                     })
                 }
 
