@@ -3,166 +3,270 @@ package com.example.securesphere
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
+import com.nulabinc.zxcvbn.Zxcvbn
+import okhttp3.*
 import org.json.JSONObject
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
+import java.io.IOException
+import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 class BreachCheckActivity : AppCompatActivity() {
 
-    private lateinit var etEmail: EditText
-    private lateinit var btnCheck: Button
-    private lateinit var tvResult: TextView
-    private lateinit var cb2FA: CheckBox
-    private lateinit var cbReuse: CheckBox
-    private lateinit var cbLegacy: CheckBox
-    private lateinit var resultContainer: LinearLayout
-    private lateinit var tvRiskBadge: TextView
-    private lateinit var cbPhoneLinked: CheckBox
-    private lateinit var dynamicBreachList: LinearLayout
+    // Fix: Load the heavy Zxcvbn library only once when the activity starts
+    private val passwordAnalyzer = Zxcvbn()
+
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
+
+    private val BACKEND_BASE = "http://192.168.1.3:5000" //http://10.0.2.2:5000 for emulator
+
+    private var passwordRisk: Int? = null
+    private var emailRisk: Int? = null
+    private var osintRisk: Int? = null
+
+    private lateinit var tvUnifiedScore: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_breach_check)
 
-        // Initialize UI hooks matching the XML elements
-        etEmail = findViewById(R.id.etBreachEmail)
-        btnCheck = findViewById(R.id.btnCheckBreach)
-        tvResult = findViewById(R.id.tvBreachResult)
-        cb2FA = findViewById(R.id.cb2FA)
-        cbReuse = findViewById(R.id.cbReuse)
-        cbLegacy = findViewById(R.id.cbLegacy)
-        cbPhoneLinked = findViewById(R.id.cbPhoneLinked)
-        resultContainer = findViewById(R.id.resultContainer)
-        tvRiskBadge = findViewById(R.id.tvRiskBadge)
-        dynamicBreachList = findViewById(R.id.dynamicBreachList)
+        tvUnifiedScore = findViewById(R.id.tvUnifiedScore)
+
+        val etEmail = findViewById<EditText>(R.id.etEmail)
+        val btnCheckEmail = findViewById<Button>(R.id.btnCheckEmail)
+        val tvEmailResult = findViewById<TextView>(R.id.tvEmailResult)
+        val tvEmailSource = findViewById<TextView>(R.id.tvEmailSource)
+
+        val etUsername = findViewById<EditText>(R.id.etUsername)
+        val btnRunSherlock = findViewById<Button>(R.id.btnRunSherlock)
+        val tvOsintStatus = findViewById<TextView>(R.id.tvOsintStatus)
+        val lvOsintResults = findViewById<ListView>(R.id.lvOsintResults)
+
+        // Handles the scroll issue for the list
+        lvOsintResults.setOnTouchListener { v, _ ->
+            v.parent.requestDisallowInterceptTouchEvent(true)
+            false
+        }
+
+        val etPassword = findViewById<EditText>(R.id.etPassword)
+        val tvStatus = findViewById<TextView>(R.id.tvStatus)
+        val btnCheck = findViewById<Button>(R.id.btnCheck)
+
+        btnCheckEmail.setOnClickListener {
+            val email = etEmail.text.toString().trim()
+            if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                tvEmailResult.text = "Checking breach databases..."
+                tvEmailResult.setTextColor(Color.parseColor("#FFA000"))
+                checkEmailBreach(email, tvEmailResult, tvEmailSource)
+            } else {
+                Toast.makeText(this, "Enter a valid email address", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnRunSherlock.setOnClickListener {
+            val username = etUsername.text.toString().trim()
+            if (username.isNotEmpty()) {
+                tvOsintStatus.text = "ENGINE START: Scanning 400+ Platforms...\n(30-60 seconds)"
+                tvOsintStatus.setTextColor(Color.parseColor("#FFA000"))
+                lvOsintResults.visibility = View.GONE
+                runSherlockScan(username, tvOsintStatus, lvOsintResults)
+            } else {
+                Toast.makeText(this, "Enter a username first", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         btnCheck.setOnClickListener {
-            val emailInput = etEmail.text.toString().trim()
+            val pwd = etPassword.text.toString().trim()
+            if (pwd.isNotEmpty()) {
+                tvStatus.text = "Analyzing Security..."
+                tvStatus.setTextColor(Color.parseColor("#FFA000"))
 
-            if (emailInput.isEmpty()) {
-                etEmail.error = "Please enter an email"
-                return@setOnClickListener
-            }
-
-            // Lock UI input controls during API fetch transactions
-            btnCheck.isEnabled = false
-            btnCheck.text = "Analyzing Threat Vector..."
-            resultContainer.visibility = View.GONE
-            dynamicBreachList.removeAllViews()
-
-            // Safe Coroutine routing to keep the main interface responsive
-            executeRiskAssessment(emailInput)
-        }
-    }
-
-    private fun executeRiskAssessment(email: String) {
-        val q1 = cb2FA.isChecked
-        val q2 = cbReuse.isChecked
-        val q3 = cbLegacy.isChecked
-        val q4 = cbPhoneLinked.isChecked
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // For Android Studio Emulator, 10.0.2.2 reroutes directly to your computer's localhost FastAPI server instance
-                val targetUrl = URL("https://nimra3238.pythonanywhere.com/check-breach")
-                val conn = targetUrl.openConnection() as HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                conn.setRequestProperty("Accept", "application/json")
-                conn.doOutput = true
-
-                // Structure payload schema components
-                val rootJson = JSONObject().apply {
-                    put("email", email)
-                    put("questionnaire", JSONObject().apply {
-                        put("is_2fa_disabled", q1)
-                        put("is_password_reused", q2)
-                        put("has_legacy_connected_apps", q3)
-                        put("is_phone_linked", q4)
-                    })
-                }
-
-                OutputStreamWriter(conn.outputStream, "UTF-8").use { os ->
-                    os.write(rootJson.toString())
-                    os.flush()
-                }
-
-                if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                    val responseString = conn.inputStream.bufferedReader().use { it.readText() }
-                    val jsonResponse = JSONObject(responseString)
-
-                    withContext(Dispatchers.Main) {
-                        renderAssessmentResults(jsonResponse)
+                // Run heavy math on a background thread to prevent the "Not Responding" error
+                thread {
+                    val strength = passwordAnalyzer.measure(pwd)
+                    val score = strength.score * 25
+                    runOnUiThread {
+                        checkBreach(pwd, score, tvStatus)
                     }
-                } else {
-                    showErrorOnMainThread("Engine error code: ${conn.responseCode}")
                 }
-            } catch (e: Exception) {
-                showErrorOnMainThread("Network offline. Confirm FastAPI is hosting local server port loop.")
+            } else {
+                Toast.makeText(this, "Enter a password first", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun renderAssessmentResults(data: JSONObject) {
-        btnCheck.isEnabled = true
-        btnCheck.text = "Run Security Audit"
-        resultContainer.visibility = View.VISIBLE
+    private fun checkEmailBreach(email: String, tvResult: TextView, tvSource: TextView) {
+        val url = "$BACKEND_BASE/check_email_breach?email=$email"
+        val request = Request.Builder().url(url).build()
 
-        val score = data.getInt("vulnerability_index_percentage")
-        val grade = data.getString("risk_grade")
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread { tvResult.text = "Connection Error"; tvResult.setTextColor(Color.GRAY) }
+            }
 
-        tvResult.text = "Vulnerability Index Percentage: $score%"
-        tvRiskBadge.text = grade
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string() ?: "{}"
+                try {
+                    val json = JSONObject(body)
+                    val status = json.optString("status", "ERROR")
+                    val exposed = json.optBoolean("exposed", false)
+                    val count = json.optInt("breach_count", 0)
+                    val source = json.optString("source", "")
+                    val breachesArr = json.optJSONArray("breaches")
 
-        when (grade) {
-            "CRITICAL RISK" -> {
-                tvRiskBadge.setBackgroundColor(Color.parseColor("#D32F2F"))
-                tvRiskBadge.setTextColor(Color.WHITE)
-            }
-            "MEDIUM RISK" -> {
-                tvRiskBadge.setBackgroundColor(Color.parseColor("#F57C00"))
-                tvRiskBadge.setTextColor(Color.WHITE)
-            }
-            else -> {
-                tvRiskBadge.setBackgroundColor(Color.parseColor("#388E3C"))
-                tvRiskBadge.setTextColor(Color.WHITE)
-            }
-        }
-
-        val breachLogs: JSONArray = data.getJSONArray("breach_logs")
-        if (breachLogs.length() == 0) {
-            val clearTxt = TextView(this).apply {
-                text = "✔ Safe baseline status. No dark web data exposures discovered."
-                setTextColor(Color.GREEN)
-                setPadding(0, 8, 0, 8)
-            }
-            dynamicBreachList.addView(clearTxt)
-        } else {
-            for (i in 0 until breachLogs.length()) {
-                val leakObj = breachLogs.getJSONObject(i)
-                val entryField = TextView(this).apply {
-                    text = "⚠ Leak: ${leakObj.getString("breach_name")} (${leakObj.getInt("year")})\n   Exposed elements: ${leakObj.getString("exposed_data")}"
-                    setTextColor(Color.parseColor("#FFCC00"))
-                    setPadding(0, 10, 0, 10)
+                    runOnUiThread {
+                        if (status != "SUCCESS") {
+                            tvResult.text = "⚠️ ${json.optString("message", "Error")}"
+                            tvResult.setTextColor(Color.parseColor("#FFA000"))
+                        } else if (!exposed) {
+                            tvResult.text = "✅ No breaches found."
+                            tvResult.setTextColor(Color.parseColor("#2E7D32"))
+                            emailRisk = 0
+                        } else {
+                            val sb = StringBuilder("⚠️ EXPOSED in $count breach(es):\n\n")
+                            breachesArr?.let {
+                                for (i in 0 until it.length()) sb.append("• ${it.getString(i)}\n")
+                            }
+                            tvResult.text = sb.toString()
+                            tvResult.setTextColor(Color.parseColor("#C62828"))
+                            emailRisk = minOf(100, count * 15)
+                        }
+                        tvSource.text = if (source.isNotEmpty()) "Source: $source" else ""
+                        updateUnifiedScore()
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread { tvResult.text = "Error parsing data." }
                 }
-                dynamicBreachList.addView(entryField)
             }
+        })
+    }
+
+    private fun runSherlockScan(username: String, tvStatus: TextView, lvResults: ListView) {
+        val url = "$BACKEND_BASE/scan_username?username=$username"
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread { tvStatus.text = "ERROR: Offline"; tvStatus.setTextColor(Color.parseColor("#C62828")) }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string() ?: "{}"
+                try {
+                    val json = JSONObject(body)
+                    val count = json.optInt("count", 0)
+                    val arr = json.optJSONArray("platforms_found")
+                    val names = mutableListOf<String>()
+                    val urls = mutableListOf<String>()
+
+                    arr?.let {
+                        for (i in 0 until it.length()) {
+                            val obj = it.getJSONObject(i)
+                            names.add(obj.getString("platform"))
+                            urls.add(obj.getString("url"))
+                        }
+                    }
+
+                    runOnUiThread {
+                        if (count == 0) {
+                            tvStatus.text = "No public profiles found."
+                            lvResults.visibility = View.GONE
+                        } else {
+                            tvStatus.text = "✅ $count profile(s) found"
+                            tvStatus.setTextColor(Color.parseColor("#2E7D32"))
+                            val adapter = object : ArrayAdapter<String>(this@BreachCheckActivity, android.R.layout.simple_list_item_2, android.R.id.text1, names) {
+                                override fun getView(pos: Int, conv: View?, parent: ViewGroup): View {
+                                    val v = super.getView(pos, conv, parent)
+                                    v.findViewById<TextView>(android.R.id.text2).apply {
+                                        text = urls[pos]
+                                        setTextColor(Color.parseColor("#1565C0"))
+                                    }
+                                    return v
+                                }
+                            }
+                            lvResults.adapter = adapter
+                            lvResults.visibility = View.VISIBLE
+                            lvResults.setOnItemClickListener { _, _, p, _ ->
+                                startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(urls[p])))
+                            }
+                        }
+                        osintRisk = minOf(100, count * 10)
+                        updateUnifiedScore()
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread { tvStatus.text = "Error parsing scan." }
+                }
+            }
+        })
+    }
+
+    private fun checkBreach(password: String, score: Int, tvStatus: TextView) {
+        thread {
+            val hash = sha1(password).uppercase()
+            val prefix = hash.take(5)
+            val suffix = hash.substring(5)
+
+            val request = Request.Builder().url("https://api.pwnedpasswords.com/range/$prefix").build()
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    runOnUiThread { tvStatus.text = "Network Error" }
+                }
+                override fun onResponse(call: Call, response: Response) {
+                    val responseBody = response.body?.string() ?: ""
+                    val isPwned = responseBody.contains(suffix)
+                    runOnUiThread {
+                        if (isPwned) {
+                            tvStatus.text = "⚠️ BREACHED!\nSecurity Score: $score/100"
+                            tvStatus.setTextColor(Color.parseColor("#C62828"))
+                            passwordRisk = 100
+                        } else {
+                            tvStatus.text = "✅ SECURE.\nSecurity Score: $score/100"
+                            tvStatus.setTextColor(Color.parseColor("#2E7D32"))
+                            passwordRisk = 100 - score
+                        }
+                        updateUnifiedScore()
+                    }
+                }
+            })
         }
     }
 
-    private suspend fun showErrorOnMainThread(message: String) {
-        withContext(Dispatchers.Main) {
-            btnCheck.isEnabled = true
-            btnCheck.text = "Run Security Audit"
-            Toast.makeText(this@BreachCheckActivity, message, Toast.LENGTH_LONG).show()
+    private fun updateUnifiedScore() {
+        val components = mutableListOf<Pair<Int, Double>>()
+        emailRisk?.let { components.add(it to 0.35) }
+        passwordRisk?.let { components.add(it to 0.40) }
+        osintRisk?.let { components.add(it to 0.25) }
+
+        if (components.isEmpty()) return
+
+        val totalWeight = components.sumOf { it.second }
+        val score = (components.sumOf { it.first * it.second } / totalWeight).toInt()
+
+        // Fixed formatting of the 'when' statement
+        val label = when {
+            score <= 30 -> "LOW RISK ✅"
+            score <= 60 -> "MODERATE RISK ⚠️"
+            else -> "HIGH RISK ❌"
         }
+
+        val color = when {
+            score <= 30 -> "#2E7D32"
+            score <= 60 -> "#FFA000"
+            else -> "#C62828"
+        }
+
+        tvUnifiedScore.text = "IDENTITY RISK SCORE: $score/100 — $label\nBased on ${components.size} of 3 checks"
+        tvUnifiedScore.setTextColor(Color.parseColor(color))
+    }
+
+    private fun sha1(input: String): String {
+        val bytes = MessageDigest.getInstance("SHA-1").digest(input.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

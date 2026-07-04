@@ -3,14 +3,14 @@
     <string name="terminal_title">SecureSphere Terminal</string>
     <string name="default_initial">U</string>
 
-    <string name="title_spam_url">Check Spam URL</string>
+    <string name="title_spam_url">Spam URL Detector</string>
     <string name="title_email_spam">Check Email Spam</string>
-    <string name="title_identity_breach">Identity Breach</string>
-    <string name="title_caller_id">Caller ID Check</string>
+    <string name="title_identity_breach">Identity Audit</string>
+    <string name="title_caller_id">Caller Identification</string>
     <string name="title_password_vault">Password Vault</string>
     <string name="title_image_vault">Image Vault</string>
     <string name="title_malware_analysis">Malware Analysis</string>
-    <string name="title_risky_tracking">Risky Tracking</string>
+    <string name="title_risky_tracking">Risky Area Tracking</string>
 
     <string name="desc_spam_url_icon">Spam URL Icon</string>
     <string name="desc_email_spam_icon">Email Spam Icon</string>
