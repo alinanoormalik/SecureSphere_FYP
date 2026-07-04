@@ -33,7 +33,7 @@ class EmailActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            tvResult.text = "Analyzing email..."
+            tvResult.text = "Analyzing email"
             tvResult.setTextColor(Color.GRAY)
 
             val json = JSONObject()
