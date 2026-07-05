@@ -77,7 +77,7 @@ class EmailActivity : AppCompatActivity() {
 
                             when (label) {
                                 "SPAM" -> {
-                                    tvResult.text = "🚨 Fraudulent Email Detected\nConfidence: ${
+                                    tvResult.text = " Fraudulent Email Detected\nConfidence: ${
                                         "%.1f".format(confidence)
                                     }%"
                                     tvResult.setTextColor(Color.RED)
@@ -85,7 +85,7 @@ class EmailActivity : AppCompatActivity() {
 
                                 "SUSPICIOUS" -> {
                                     tvResult.text =
-                                        "⚠️ Suspicious Email\nConfidence: ${"%.1f".format(confidence)}%"
+                                        " Suspicious Email\nConfidence: ${"%.1f".format(confidence)}%"
                                     tvResult.setTextColor(Color.parseColor("#FFA500"))
                                 }
 
@@ -96,7 +96,7 @@ class EmailActivity : AppCompatActivity() {
 
                                 else -> {
                                     tvResult.text =
-                                        "✅ Legitimate Email\nConfidence: ${"%.1f".format(confidence)}%"
+                                        "Legitimate Email\nConfidence: ${"%.1f".format(confidence)}%"
                                     tvResult.setTextColor(Color.GREEN)
                                 }
                             }
