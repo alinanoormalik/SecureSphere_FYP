@@ -4,54 +4,135 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="26dp"
-    android:gravity="center_horizontal"
-    android:background="?attr/colorSurface">
+    android:padding="16dp"
+    android:background="#FFFFFF">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email Scanner"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
-        android:layout_marginBottom="24dp"/>
-
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        app:hintTextColor="?attr/colorPrimary"
-        app:boxStrokeColor="?attr/colorPrimary">
+        android:text="Email Spam Detector"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
 
-        <com.google.android.material.textfield.TextInputEditText
+    <!-- Input Box -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Paste Email Content to analyze..."
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <EditText
             android:id="@+id/etEmailText"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:hint="Paste email content here..."
-            android:gravity="top"
+            android:layout_height="120dp"
+            android:gravity="top|start"
             android:inputType="textMultiLine"
-            android:textColor="?attr/colorOnSurface" />
+            android:scrollbars="vertical"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Scan Button -->
     <Button
         android:id="@+id/btnScanEmail"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Check for Fraud"
-        style="@style/Widget.MaterialComponents.Button"
-        android:backgroundTint="?attr/colorPrimary"
-        android:textColor="?attr/colorOnPrimary"
-        android:layout_marginTop="10dp"/>
-
-    <TextView
-        android:id="@+id/tvEmailResult"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="..."
-        android:textSize="20sp"
-        android:textColor="?attr/colorOnSurface"
-        android:layout_marginTop="30dp"/>
+        android:text="SCAN EMAIL"
+        android:backgroundTint="#B388FF"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"/>
 
+    <!-- Professional Result Breakdown Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/resultCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="#F8F6FF"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Title Header -->
+            <TextView
+                android:id="@+id/tvResultHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Analyzing email..."
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFA500"/>
+
+            <!-- Dynamic Explanations -->
+            <TextView
+                android:id="@+id/tvResultDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Running dynamic ML vector analysis..."
+                android:textColor="#333333"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Verdict Label -->
+            <TextView
+                android:id="@+id/tvVerdictLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI Classification: PENDING"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:textSize="14sp"/>
+
+            <!-- Progress Metric Layout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Confidence: "
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tvConfidencePercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+
+            <!-- Matching Indicator Bar -->
+            <ProgressBar
+                android:id="@+id/pbConfidence"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                android:progress="0"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </LinearLayout>
