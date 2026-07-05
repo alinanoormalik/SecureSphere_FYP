@@ -4,130 +4,194 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:padding="26dp"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="24dp">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Identity Audit"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- UNIFIED SCORE CARD -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Identity Breach &amp; Audit Engine"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="22sp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="?attr/colorPrimary"
+            app:strokeWidth="1dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:id="@+id/tvUnifiedScore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="18dp"
+                android:text="IDENTITY RISK SCORE: --/100\nRun checks below to calculate"
+                android:textColor="#616161"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="center"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- STEP 1: EMAIL -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Step 1 — Email Breach Check"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:hintTextColor="?attr/colorPrimary"
             app:boxStrokeColor="?attr/colorPrimary">
-
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etBreachEmail"
+                android:id="@+id/etEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter email address to evaluate"
+                android:hint="Enter Email Address"
                 android:inputType="textEmailAddress"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="?attr/colorOnSurface"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <Button
+            android:id="@+id/btnCheckEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="CHECK EMAIL EXPOSURE"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_marginTop="10dp"/>
+
         <TextView
+            android:id="@+id/tvEmailResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Active Posture Self-Assessment Options:"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="14sp"
-            android:layout_marginBottom="10dp"/>
+            android:text="Status: Ready"
+            android:layout_marginTop="12dp"/>
 
-        <CheckBox
-            android:id="@+id/cb2FA"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Two-Factor Authentication (2FA) is Disabled"
-            android:textColor="?attr/colorOnSurface"
-            android:buttonTint="?attr/colorPrimary"
-            android:layout_marginBottom="3dp"/>
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="24dp"/>
 
-        <CheckBox
-            android:id="@+id/cbReuse"
-            android:layout_width="match_parent"
+        <!-- STEP 2: OSINT (WITH NEW PROGRESS BAR) -->
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="I reuse passwords across profiles"
-            android:textColor="?attr/colorOnSurface"
-            android:buttonTint="?attr/colorPrimary"
-            android:layout_marginBottom="3dp"/>
+            android:text="Step 2 — Impersonation &amp; Clone Finder"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
 
-        <CheckBox
-            android:id="@+id/cbLegacy"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Outdated / Legacy app access"
-            android:textColor="?attr/colorOnSurface"
-            android:buttonTint="?attr/colorPrimary"
-            android:layout_marginBottom="3dp"/>
-
-        <CheckBox
-            android:id="@+id/cbPhoneLinked"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="My phone number is linked to my social accounts"
-            android:textColor="?attr/colorOnSurface"
-            android:buttonTint="?attr/colorPrimary"
-            android:layout_marginBottom="3dp" />
+            app:boxStrokeColor="?attr/colorPrimary">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter Username (No Spaces)"
+                android:textColor="?attr/colorOnSurface"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
-            android:id="@+id/btnCheckBreach"
+            android:id="@+id/btnRunSherlock"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Run Security Audit"
+            android:layout_height="56dp"
+            android:text="START OSINT RECONNAISSANCE"
             android:backgroundTint="?attr/colorPrimary"
-            android:textColor="?attr/colorOnPrimary"
-            android:textStyle="bold"
-            android:textAllCaps="false"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginTop="10dp"/>
 
-        <LinearLayout
-            android:id="@+id/resultContainer"
+        <!-- LOADING SPINNER -->
+        <ProgressBar
+            android:id="@+id/osintLoading"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"/>
+
+        <!-- OSINT RESULT CARD -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardOsint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="?attr/colorSurfaceVariant"
-            android:padding="16dp"
-            android:visibility="gone">
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="#EEEEEE"
+            app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp">
+                <TextView
+                    android:id="@+id/tvOsintStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Found Profiles:"
+                    android:textStyle="bold"
+                    android:padding="8dp"/>
+                <ListView
+                    android:id="@+id/lvOsintResults"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:divider="#EEEEEE"
+                    android:dividerHeight="1dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/tvRiskBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LOW RISK"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorPrimary"
-                android:background="@drawable/circle_background"
-                android:layout_marginBottom="12dp"/>
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="24dp"/>
 
-            <TextView
-                android:id="@+id/tvBreachResult"
+        <!-- STEP 3: PASSWORD -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Step 3 — Password Hygiene &amp; Breach"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:passwordToggleEnabled="true"
+            app:boxStrokeColor="?attr/colorPrimary">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp"/>
+                android:hint="Test Password Strength"
+                android:inputType="textPassword"
+                android:textColor="?attr/colorOnSurface"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <LinearLayout
-                android:id="@+id/dynamicBreachList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/btnCheck"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="CHECK PASSWORD LEAKS"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Database Status: Ready"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="40dp"/>
+
     </LinearLayout>
 </ScrollView>

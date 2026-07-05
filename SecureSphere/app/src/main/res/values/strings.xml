@@ -3,14 +3,14 @@
     <string name="terminal_title">SecureSphere Terminal</string>
     <string name="default_initial">U</string>
 
-    <string name="title_spam_url">Check Spam URL</string>
-    <string name="title_email_spam">Check Email Spam</string>
-    <string name="title_identity_breach">Identity Breach</string>
-    <string name="title_caller_id">Caller ID Check</string>
+    <string name="title_spam_url">Spam URL Detector</string>
+    <string name="title_email_spam">Email Scanner</string>
+    <string name="title_identity_breach">Identity Audit</string>
+    <string name="title_caller_id">Caller Identification</string>
     <string name="title_password_vault">Password Vault</string>
     <string name="title_image_vault">Image Vault</string>
     <string name="title_malware_analysis">Malware Analysis</string>
-    <string name="title_risky_tracking">Risky Tracking</string>
+    <string name="title_risky_tracking">Risky Area Tracking</string>
 
     <string name="desc_spam_url_icon">Spam URL Icon</string>
     <string name="desc_email_spam_icon">Email Spam Icon</string>
@@ -35,10 +35,13 @@
     <string name="title_login">Welcome Back</string>
     <string name="title_signup">Create Account</string>
     <string name="hint_email">Email Address</string>
-    <string name="hint_password">Password (min 6 chars)</string>
+
+    <!-- FIXED: Removed (min 6 chars) -->
+    <string name="hint_password">Password</string>
+
     <string name="action_login">LOG IN</string>
     <string name="action_signup">SIGN UP</string>
-    <string name="label_remember_me">Remember Me (Skip 2FA)</string>
+    <string name="label_remember_me">Remember Me</string>
     <string name="switch_to_signup">New here? Create an account</string>
     <string name="switch_to_login">Already have an account? Login</string>
 

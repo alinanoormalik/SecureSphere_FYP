@@ -73,6 +73,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.2.0")
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.nulab-inc:zxcvbn:1.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     // --- Testing ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
