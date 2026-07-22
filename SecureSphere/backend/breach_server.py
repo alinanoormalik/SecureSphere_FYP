@@ -15,78 +15,96 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(BASE_DIR, "sherlock_results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# No spaces allowed for usernames in OSINT
 USERNAME_PATTERN = re.compile(r'^[A-Za-z0-9_.\-]{1,50}$')
 
 USER_AGENTS = [
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 ]
 
-def identify_pro_existence(username):
-    """Signature probing for IG, FB, and LinkedIn (WhatsMyName Logic)"""
-    res_list = []
+def identify_account_existence(username):
+    """Signature Detection Logic for Big 3 + LinkedIn"""
+    results = []
     
-    # 1. INSTAGRAM (Redirect Probe)
+    # 1. INSTAGRAM
     try:
         url = f"https://www.instagram.com/{username}/"
-        r = requests.get(url, headers={"User-Agent": USER_AGENTS[0]}, timeout=8)
-        if r.status_code == 200 and "/login/" not in r.url.lower():
-            res_list.append({"platform": "Instagram", "url": url})
+        res = requests.get(url, headers={"User-Agent": USER_AGENTS[0]}, timeout=8)
+        if res.status_code == 200 and "/login/" not in res.url.lower():
+            results.append({"platform": "Instagram", "url": url})
     except: pass
 
-    # 2. FACEBOOK (Signature Probe)
+    # 2. FACEBOOK
     try:
         url = f"https://www.facebook.com/{username}"
-        r = requests.get(url, headers={"User-Agent": USER_AGENTS[1]}, timeout=8)
-        if r.status_code == 200 and "content_not_found" not in r.text and "login" not in r.url.lower():
-            res_list.append({"platform": "Facebook", "url": url})
+        res = requests.get(url, headers={"User-Agent": USER_AGENTS[1]}, timeout=8)
+        if res.status_code == 200 and "login" not in res.url.lower():
+            results.append({"platform": "Facebook", "url": url})
     except: pass
 
-    # 3. LINKEDIN (Pre-Authwall Probe)
+    # 3. LINKEDIN
     try:
         url = f"https://www.linkedin.com/in/{username}"
-        # If LinkedIn allows the request without redirecting to 'authwall', the profile exists
-        r = requests.get(url, headers={"User-Agent": USER_AGENTS[1]}, timeout=8, allow_redirects=False)
-        if r.status_code == 200:
-            res_list.append({"platform": "LinkedIn", "url": url})
+        res = requests.get(url, headers={"User-Agent": USER_AGENTS[1]}, timeout=8, allow_redirects=False)
+        if res.status_code == 200:
+            results.append({"platform": "LinkedIn", "url": url})
     except: pass
 
-    return res_list
+    return results  # THIS WAS MISSING
 
 @app.route('/scan_username', methods=['GET'])
 def scan_username():
     username = request.args.get('username', '').strip()
     if not USERNAME_PATTERN.match(username):
-        return jsonify({"error": "No spaces allowed in username"}), 400
+        return jsonify({"error": "Invalid username characters"}), 400
 
-    # Run Main Engine
-    cmd = ["sherlock", username, "--csv", "--timeout", "15", "--folderoutput", RESULTS_DIR]
-    subprocess.run(cmd, shell=False, timeout=120)
+    # 1. Start Sherlock Engine
+    cmd = ["sherlock", username, "--csv", "--timeout", "5", "--folderoutput", RESULTS_DIR]
+    
+    try:
+        subprocess.run(cmd, shell=False, timeout=250) # Increased timeout
+    except subprocess.TimeoutExpired:
+        print("Sherlock took too long, proceeding with partial results.")
 
     found = []
-    # JUNK BLACKLIST: Removing the fake-positive/spammy sites
-    JUNK_SITES = ["BoardGameGeek", "omg.lol", "Blitz Tactics", "GaiaOnline", "Pokemon Showdown", "Archive.org", "Giphy", "Wikipedia", "mastodon.social", "mstdn.io"]
-
     csv_path = os.path.join(RESULTS_DIR, f"{username}.csv")
-    if os.path.exists(csv_path):
-        with open(csv_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                name = row.get("name")
-                if row.get("exists", "").lower() == "claimed" and name not in JUNK_SITES:
-                    found.append({"platform": name, "url": row.get("url_user")})
-        os.remove(csv_path)
+    BLACKLIST = ["BoardGameGeek", "omg.lol", "Archive.org", "Giphy"]
 
-    # Add Pro Probes (IG/FB/LinkedIn)
-    existing = [p['platform'] for p in found]
-    for p in identify_pro_existence(username):
-        if p['platform'] not in existing:
-            found.append(p)
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    name = row.get("name")
+                    if row.get("exists", "").lower() == "claimed" and name not in BLACKLIST:
+                        found.append({"platform": name, "url": row.get("url_user")})
+            os.remove(csv_path)
+        except: pass
+    
+    # 2. Run Pro Booster
+    existing_platforms = [item['platform'] for item in found]
+    pro_finds = identify_account_existence(username)
+    
+    # pro_finds is now a list, so this loop will work!
+    for item in pro_finds:
+        if item['platform'] not in existing_platforms:
+            found.append(item)
 
     return jsonify({"platforms_found": found, "count": len(found)})
 
-# ... (Keep your Email Breach and Password routes exactly as they were) ...
+@app.route('/check_email_breach', methods=['GET'])
+def check_email_breach():
+    email = request.args.get('email', '').strip().lower()
+    try:
+        resp = requests.get(f"https://api.xposedornot.com/v1/check-email/{email}", timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            breaches = data.get("breaches", [[]])[0]
+            return jsonify({"status": "SUCCESS", "exposed": True, "breach_count": len(breaches), "breaches": breaches})
+        return jsonify({"status": "SUCCESS", "exposed": False, "breach_count": 0, "breaches": []})
+    except:
+        return jsonify({"status": "ERROR", "message": "Breach API Timeout"}), 502
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
