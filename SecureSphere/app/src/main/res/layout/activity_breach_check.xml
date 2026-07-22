@@ -44,7 +44,7 @@
                 android:gravity="center"/>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- STEP 1: EMAIL -->
+        <!-- STEP 1: EMAIL BREACH CHECK -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,7 +73,8 @@
             android:layout_height="56dp"
             android:text="CHECK EMAIL EXPOSURE"
             android:backgroundTint="?attr/colorPrimary"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="100dp"
+            android:layout_marginBottom="12dp"/>
 
         <TextView
             android:id="@+id/tvEmailResult"
@@ -84,7 +85,7 @@
 
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="24dp"/>
 
-        <!-- STEP 2: OSINT (WITH NEW PROGRESS BAR) -->
+        <!-- STEP 2: OSINT SCAN -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -112,9 +113,10 @@
             android:layout_height="56dp"
             android:text="START OSINT RECONNAISSANCE"
             android:backgroundTint="?attr/colorPrimary"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"/>
 
-        <!-- LOADING SPINNER -->
         <ProgressBar
             android:id="@+id/osintLoading"
             style="?android:attr/progressBarStyleSmall"
@@ -124,7 +126,6 @@
             android:layout_marginTop="10dp"
             android:visibility="gone"/>
 
-        <!-- OSINT RESULT CARD -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardOsint"
             android:layout_width="match_parent"
@@ -132,16 +133,23 @@
             android:layout_marginTop="16dp"
             android:visibility="gone"
             app:cardCornerRadius="12dp"
-            app:strokeColor="#EEEEEE"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="1dp">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
                 <TextView
                     android:id="@+id/tvOsintStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Found Profiles:"
-                    android:textStyle="bold"
-                    android:padding="8dp"/>
+                    android:padding="8dp"
+                    android:textSize="13sp"
+                    android:textStyle="bold"/>
+
                 <ListView
                     android:id="@+id/lvOsintResults"
                     android:layout_width="match_parent"
@@ -153,7 +161,7 @@
 
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="24dp"/>
 
-        <!-- STEP 3: PASSWORD -->
+        <!-- STEP 3: PASSWORD BREACH -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

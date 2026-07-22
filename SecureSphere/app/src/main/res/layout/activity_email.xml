@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="?attr/colorSurface"> <!-- Dynamic Background -->
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Email Spam Detector"
-        android:textColor="#000000"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -21,7 +21,9 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Paste Email Content to analyze..."
+        android:hint="Paste Email Content..."
+        android:textColorHint="?attr/colorOnSurfaceVariant"
+        app:hintTextColor="?attr/colorPrimary"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <EditText
@@ -29,6 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:gravity="top|start"
+            android:textColor="?attr/colorOnSurface"
             android:inputType="textMultiLine"
             android:scrollbars="vertical"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -39,8 +42,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="SCAN EMAIL"
-        android:backgroundTint="#B388FF"
-        android:textColor="#000000"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="24dp"/>
@@ -52,7 +55,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="#F8F6FF"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
         android:visibility="gone">
 
         <LinearLayout
@@ -61,23 +64,22 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title Header -->
+            <!-- Title Header (Color is handled in Kotlin dynamically) -->
             <TextView
                 android:id="@+id/tvResultHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Analyzing email..."
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#FFA500"/>
+                android:textStyle="bold"/>
 
             <!-- Dynamic Explanations -->
             <TextView
                 android:id="@+id/tvResultDetails"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Running dynamic ML vector analysis..."
-                android:textColor="#333333"
+                android:text="Running analysis..."
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"/>
@@ -85,7 +87,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#E0E0E0"
+                android:background="?attr/colorOutlineVariant"
                 android:layout_marginBottom="12dp"/>
 
             <!-- Verdict Label -->
@@ -94,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="AI Classification: PENDING"
-                android:textColor="#000000"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
                 android:textSize="14sp"/>
 
@@ -109,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="AI Confidence: "
-                    android:textColor="#000000"
+                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
                     android:textSize="13sp"/>
 
@@ -118,18 +120,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0%"
-                    android:textColor="#000000"
+                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
                     android:textSize="13sp"/>
             </LinearLayout>
 
-            <!-- Matching Indicator Bar -->
             <ProgressBar
                 android:id="@+id/pbConfidence"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:progressBackgroundTint="?attr/colorOutline"
                 android:max="100"
                 android:progress="0"/>
 

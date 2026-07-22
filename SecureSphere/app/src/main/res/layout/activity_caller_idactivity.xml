@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,16 +19,16 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
             android:text="Caller Identification"
-            android:fontFamily="@font/poppins_bold"
-            android:textColor="#1F2937"
-            android:textSize="22sp" />
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter Phone Number"
-            app:boxStrokeColor="#A88BFA"
-            app:hintTextColor="#A88BFA"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:hintTextColor="?attr/colorPrimary"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -36,8 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="phone"
-                android:fontFamily="@font/poppins_regular"
-                android:textColor="#1F2937"/>
+                android:textColor="?attr/colorOnSurface"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -47,8 +46,8 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp"
             android:text="Identify Caller"
-            android:fontFamily="@font/poppins_bold"
-            app:backgroundTint="#A88BFA"
+            app:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
             app:cornerRadius="12dp" />
 
         <FrameLayout
@@ -64,34 +63,17 @@
                 android:gravity="center"
                 android:visibility="gone"
                 android:padding="24dp">
-
-                <RelativeLayout
-                    android:layout_width="120dp"
-                    android:layout_height="120dp">
-
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:layout_centerInParent="true"
-                        android:src="@drawable/ss_logo" />
-
-                    <ProgressBar
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_centerInParent="true"
-                        android:indeterminate="true"
-                        android:indeterminateTint="#A88BFA" />
-                </RelativeLayout>
-
+                <ProgressBar
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminateTint="?attr/colorPrimary" />
                 <TextView
                     android:id="@+id/loadingCaption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Identifying number..."
-                    android:fontFamily="@font/poppins_regular"
-                    android:textColor="#6B7280"
-                    android:textSize="14sp" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
@@ -102,8 +84,8 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB"
-                app:cardBackgroundColor="#FFFFFF">
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -115,26 +97,19 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="NUMBER INFORMATION"
-                            android:fontFamily="@font/poppins_bold"
-                            android:textSize="12sp"
-                            android:textColor="#A88BFA"
-                            android:letterSpacing="0.1" />
-
+                            android:textColor="?attr/colorPrimary"
+                            android:textStyle="bold"
+                            android:textSize="12sp" />
                         <TextView
                             android:id="@+id/txtAnalysis"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="VERIFIED IDENTITY"
-                            android:fontFamily="@font/poppins_bold"
-                            android:textSize="12sp"
-                            android:textColor="#10B981"
-                            android:background="#E6F4EA"
+                            android:textStyle="bold"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="4dp" />
                     </RelativeLayout>
@@ -142,92 +117,13 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#F3F4F6"
+                        android:background="?attr/colorOutlineVariant"
                         android:layout_marginBottom="16dp"/>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="Target"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="#9CA3AF"
-                            android:textSize="14sp"/>
-                        <TextView
-                            android:id="@+id/txtTarget"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins_bold"
-                            android:textColor="#1F2937"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="Country"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="#9CA3AF"
-                            android:textSize="14sp"/>
-                        <TextView
-                            android:id="@+id/txtCountry"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins_medium"
-                            android:textColor="#1F2937"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="Line Type"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="#9CA3AF"
-                            android:textSize="14sp"/>
-                        <TextView
-                            android:id="@+id/txtLineType"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins_medium"
-                            android:textColor="#1F2937"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="Carrier"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="#9CA3AF"
-                            android:textSize="14sp"/>
-                        <TextView
-                            android:id="@+id/txtCarrier"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins_medium"
-                            android:textColor="#1F2937"
-                            android:textSize="14sp"/>
-                    </LinearLayout>
-
+                    <TextView android:id="@+id/txtTarget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurface" android:textStyle="bold"/>
+                    <TextView android:id="@+id/txtCountry" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurface"/>
+                    <TextView android:id="@+id/txtLineType" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurface"/>
+                    <TextView android:id="@+id/txtCarrier" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurface"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </FrameLayout>
